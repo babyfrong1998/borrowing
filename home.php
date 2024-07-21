@@ -2,13 +2,9 @@
 session_start();
 include "connect.php";
 $data = "";
-
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,13 +19,11 @@ $data = "";
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
     <title>ระบบยืมคืนครุภัณฑ์ IT</title>
-
 </head>
 <style>
     body {
         font-family: 'Niramit', sans-serif;
     }
-
     h2 {
         padding-top: 20px;
         padding-bottom: 20px;
@@ -39,24 +33,20 @@ $data = "";
         font-weight: bold;
     }
 </style>
-
 <body>
     <h2 id="nav">ระบบบันทึกการยืม-คืน</h2>
     <div class="container">
         <div class="row">
             <div class="col-md-2">
                 <div class="row" id="tools">
-                    <!-- เพิ่มคำอธิบายในปุ่ม -->
                     <a href="index.php">
                         <button type="button" id="menu" class="btn btn-info col-12">ออกจากระบบ</button>
                     </a>
-
                 </div>
             </div>
             <div class="col-md-10">
                 <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">ขอยืมครุภัณฑ์</button>
                 <br>
-                <!-- เพิ่มคำอธิบายในฟอร์ม -->
                 <form action="getSql.php" method="POST" class="row g-3" id="formdata" style="display: none">
                     <div class="row">
                         <label id="headline">ข้อมูลผู้ยืม</label>
@@ -64,9 +54,7 @@ $data = "";
                         <div class="col-md-4">
                             <label for="inputname" class="form-label">ชื่อผู้ยืม</label>
                             <input type="code" class="form-control" onkeyup="submit_btn()" name="borname" id="inputname">
-
                         </div>
-
                         <div class="col-md-4" id="office_b">
                             <label for="inputtel" class="form-label">เบอร์หน่วยงาน </label>
                             <select name="office" class="selectpicker w-100" id="s_select" onchange="submit_btn()" data-live-search="true">
@@ -109,7 +97,6 @@ $data = "";
                         <div class="col-md-6 mt-2">
                             <label for="inputcode" class="form-label">รหัสครุภัณฑ์</label>
                             <select id="itemselect" name="itemselect" onchange="submit_btn()" class="selectpicker s_select w-100" data-live-search="true">
-
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -120,34 +107,28 @@ $data = "";
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card">
-
                             <div class="card-body">
                                 <h5 class="card-title">คอมพิวเตอร์</h5>
                                 <p class="card-text">จำนวนคงเหลือ 10</p>
                             </div>
                         </div>
                     </div>
-
                     <div class="col-md-4">
                         <div class="card">
-
                             <div class="card-body">
                                 <h5 class="card-title">หน้าจอ</h5>
                                 <p class="card-text">จำนวนคงเหลือ 10</p>
                             </div>
                         </div>
                     </div>
-
                     <div class="col-md-4">
                         <div class="card">
-
                             <div class="card-body">
                                 <h5 class="card-title">โทรศัพท์</h5>
                                 <p class="card-text">จำนวนคงเหลือ 10</p>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="col-md-12">
                         <table id="borrow_table" class="table display" style="width:100%;margin-top :20px;">
                             <thead>
@@ -161,19 +142,29 @@ $data = "";
                                 </tr>
                             </thead>
                             <tbody>
-                                <!---<?php
-                                /*$sql = "SELECT";
-                                if ($result = mysqli_query($conn, $sql)) {
-                                    $i = 123456;
-                                    while ($row = mysqli_fetch_assoc($result)) {*/
-                               ?>--->
+                                <?php
+                                $sql = "SELECT b_id, b_name, b_date, b_return, b_status FROM borrowing WHERE b_status = 'คืนแล้ว'";
+                                $result = $conn->query($sql);
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<tr>";
+                                        echo "<td>" . $row["b_id"] . "</td>";
+                                        echo "<td>" . $row["b_name"] . "</td>";
+                                        echo "<td>" . $row["b_date"] . "</td>";
+                                        echo "<td>" . $row["b_return"] . "</td>";
+                                        echo "<td>" . $row["b_status"] . "</td>";
+                                        echo "<td></td>";
+                                        echo "</tr>";
+                                    }
+                                } else {
+                                    echo "<tr><td colspan='6'>No data found</td></tr>";
+                                }
+                                $conn->close();
+                                ?>
                             </tbody>
+                        </table>
                     </div>
                 </div>
-
-
-
-
             </div>
         </div>
     </div>
@@ -181,108 +172,120 @@ $data = "";
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
-    <!-- Latest compiled and minified JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
-
-    <!-- (Optional) Latest compiled and minified JavaScript translation files -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>
-</body>
-
-<script>
-    let ch = 0;
-    $(document).ready(function() {
-        $('.s_select').selectpicker();
-        $('#itemstb').dataTable();
-    });
-
-    function submit_btn() {
-        var check_input = [];
-        check_input[0] = document.getElementById('inputname').value;
-        check_input[1] = document.getElementById('inputcategory').value;
-        check_input[2] = document.getElementById('bordate').value;
-        check_input[3] = document.getElementById('s_select').value;
-        check_input[4] = document.getElementById('itemselect').value;
-        var btn = document.getElementById('submid');
-        for (var i = 0; i < check_input.length; i++) {
-            if (check_input[i] == "") {
-                btn.setAttribute('class', 'btn btn-light');
-                btn.disabled = true;
-                break;
-            } else {
-                btn.setAttribute('class', 'btn btn-success');
-                btn.disabled = false;
-            }
+    <script>
+        $(document).ready(function() {
+            $('#borrow_table').DataTable();
+        });
+        function addborrow() {
+            var form = document.getElementById("formdata");
+            form.style.display = form.style.display === "none" ? "block" : "none";
         }
-    }
-
-    function setdata(checkbox, count) {
-        var cb = document.getElementById(checkbox);
-        var m_input = document.querySelectorAll('#modal_body' + count + ' input[type="text"]')[0];
-        var getdata = document.querySelectorAll('#getdata' + count + ' label');
-        var select_r = document.querySelectorAll('#modal_body' + count + ' select')[0];
-        var btn = document.querySelectorAll('#exampleModal' + count + ' input[type="submit"]')[0];
-        var op = select_r.getElementsByTagName('option');
-        if (cb.checked == true) {
-            m_input.value = getdata[0].innerHTML;
-            btn.disabled = false;
-            for (var i = 0; i < op.length; i++) {
-                if (op[i].value == getdata[1].innerHTML) {
-                    op[i].selected = true;
-                    $('#modal_body' + count + ' .selectpicker').selectpicker('val', getdata[1].innerHTML);
+        function searchTable() {
+            var input, filter, table, tr, td, i, j, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("borrow_table");
+            tr = table.getElementsByTagName("tr");
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td");
+                for (j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                            break;
+                        }
+                    }
                 }
             }
-            console.log(select_r.value);
-
-            $('.s_select').selectpicker('refresh');
-        } else {
-            m_input.value = "";
-            btn.disabled = true
         }
-    }
-
-
-
-    function addborrow() {
-        var btn = document.getElementById('btnaddbor');
-        var form = document.getElementById('formdata');
-        if (ch == 0) {
-            form.style.display = 'block';
-            ch = 1;
-        } else {
-            form.style.display = 'none';
-            ch = 0;
-        }
-    }
-
-    function checkinput(input, btn) {
-        var btn = document.getElementById(btn);
-        if (input.value != '') {
-            btn.disabled = false
-        } else {
-            btn.disabled = true
-        }
-    }
-
-    function adddata() {
-        var formdata = document.getElementById('formdata');
-        var data = formdata.getElementsByTagName('Input');
-    }
-
-    function xml_item(selectid, ref) {
-        var select = document.getElementById(selectid);
-        var xml = new XMLHttpRequest();
-
-        select.innerHTML = "";
-        xml.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                select.innerHTML = "";
-                select.innerHTML += this.responseText;
-                $('.s_select').selectpicker('refresh');
+        let ch = 0;
+        $(document).ready(function() {
+            $('.s_select').selectpicker();
+            $('#itemstb').dataTable();
+        });
+        function submit_btn() {
+            var check_input = [];
+            check_input[0] = document.getElementById('inputname').value;
+            check_input[1] = document.getElementById('inputcategory').value;
+            check_input[2] = document.getElementById('bordate').value;
+            check_input[3] = document.getElementById('s_select').value;
+            check_input[4] = document.getElementById('itemselect').value;
+            var btn = document.getElementById('submid');
+            for (var i = 0; i < check_input.length; i++) {
+                if (check_input[i] == "") {
+                    btn.setAttribute('class', 'btn btn-light');
+                    btn.disabled = true;
+                    break;
+                } else {
+                    btn.setAttribute('class', 'btn btn-success');
+                    btn.disabled = false;
+                }
             }
         }
-        xml.open("GET", "getSql.php?sql=" + ref);
-        xml.send();
-    }
-</script>
-
+        function setdata(checkbox, count) {
+            var cb = document.getElementById(checkbox);
+            var m_input = document.querySelectorAll('#modal_body' + count + ' input[type="text"]')[0];
+            var getdata = document.querySelectorAll('#getdata' + count + ' label');
+            var select_r = document.querySelectorAll('#modal_body' + count + ' select')[0];
+            var btn = document.querySelectorAll('#exampleModal' + count + ' input[type="submit"]')[0];
+            var op = select_r.getElementsByTagName('option');
+            if (cb.checked == true) {
+                m_input.value = getdata[0].innerHTML;
+                btn.disabled = false;
+                for (var i = 0; i < op.length; i++) {
+                    if (op[i].value == getdata[1].innerHTML) {
+                        op[i].selected = true;
+                        $('#modal_body' + count + ' .selectpicker').selectpicker('val', getdata[1].innerHTML);
+                    }
+                }
+                console.log(select_r.value);
+                $('.s_select').selectpicker('refresh');
+            } else {
+                m_input.value = "";
+                btn.disabled = true
+            }
+        }
+        function addborrow() {
+            var btn = document.getElementById('btnaddbor');
+            var form = document.getElementById('formdata');
+            if (ch == 0) {
+                form.style.display = 'block';
+                ch = 1;
+            } else {
+                form.style.display = 'none';
+                ch = 0;
+            }
+        }
+        function checkinput(input, btn) {
+            var btn = document.getElementById(btn);
+            if (input.value != '') {
+                btn.disabled = false
+            } else {
+                btn.disabled = true
+            }
+        }
+        function adddata() {
+            var formdata = document.getElementById('formdata');
+            var data = formdata.getElementsByTagName('Input');
+        }
+        function xml_item(selectid, ref) {
+            var select = document.getElementById(selectid);
+            var xml = new XMLHttpRequest();
+            select.innerHTML = "";
+            xml.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    select.innerHTML = "";
+                    select.innerHTML += this.responseText;
+                    $('.s_select').selectpicker('refresh');
+                }
+            }
+            xml.open("GET", "getSql.php?sql=" + ref);
+            xml.send();
+        }
+    </script>
+</body>
 </html>
