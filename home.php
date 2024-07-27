@@ -5,6 +5,7 @@ $data = "";
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,12 +19,14 @@ $data = "";
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="styles.css">
     <title>ระบบยืมคืนครุภัณฑ์ IT</title>
 </head>
 <style>
     body {
         font-family: 'Niramit', sans-serif;
     }
+
     h2 {
         padding-top: 20px;
         padding-bottom: 20px;
@@ -33,9 +36,11 @@ $data = "";
         font-weight: bold;
     }
 </style>
+
 <body>
     <h2 id="nav">ระบบบันทึกการยืม-คืน</h2>
     <div class="container">
+
         <div class="row">
             <div class="col-md-2">
                 <div class="row" id="tools">
@@ -108,24 +113,48 @@ $data = "";
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-body">
+                                <?php
+                                $sql = "SELECT COUNT(*) as 'NB' FROM `items_1` WHERE `ag_type`='T001'AND `ag_status`='ST001'";
+                                $result = $conn->query($sql);
+                                while ($row = $result->fetch_assoc()) {
+                                    $NB = $row['NB'];
+                                }
+                                ?>
                                 <h5 class="card-title">คอมพิวเตอร์</h5>
-                                <p class="card-text">จำนวนคงเหลือ 10</p>
+                                <p class="card-text">จำนวนคงเหลือ <?php echo $NB
+                                                                    ?></p>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-body">
+                                <?php
+                                $sql = "SELECT COUNT(*) as 'ph' FROM `items_1` WHERE `ag_type`='T002'AND `ag_status`='ST001'";
+                                $result = $conn->query($sql);
+                                while ($row = $result->fetch_assoc()) {
+                                    $ph = $row['ph'];
+                                }
+                                ?>
                                 <h5 class="card-title">หน้าจอ</h5>
-                                <p class="card-text">จำนวนคงเหลือ 10</p>
+                                <p class="card-text">จำนวนคงเหลือ <?php echo $ph
+                                                                    ?></p>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-body">
+                                <?php
+                                $sql = "SELECT COUNT(*) as 'sc' FROM `items_1` WHERE `ag_type`='T003'AND `ag_status`='ST001'";
+                                $result = $conn->query($sql);
+                                while ($row = $result->fetch_assoc()) {
+                                    $sc = $row['sc'];
+                                }
+                                ?>
                                 <h5 class="card-title">โทรศัพท์</h5>
-                                <p class="card-text">จำนวนคงเหลือ 10</p>
+                                <p class="card-text">จำนวนคงเหลือ <?php echo $sc
+                                                                    ?></p>
                             </div>
                         </div>
                     </div>
@@ -143,7 +172,7 @@ $data = "";
                             </thead>
                             <tbody>
                                 <?php
-                                $sql = "SELECT b_id, b_name, b_date, b_return, b_status FROM borrowing WHERE b_status = 'คืนแล้ว'";
+                                $sql = "SELECT b_id, b_name, b_date, b_return, b_status FROM borrowing";
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     while ($row = $result->fetch_assoc()) {
@@ -178,10 +207,12 @@ $data = "";
         $(document).ready(function() {
             $('#borrow_table').DataTable();
         });
+
         function addborrow() {
             var form = document.getElementById("formdata");
             form.style.display = form.style.display === "none" ? "block" : "none";
         }
+
         function searchTable() {
             var input, filter, table, tr, td, i, j, txtValue;
             input = document.getElementById("searchInput");
@@ -207,6 +238,7 @@ $data = "";
             $('.s_select').selectpicker();
             $('#itemstb').dataTable();
         });
+
         function submit_btn() {
             var check_input = [];
             check_input[0] = document.getElementById('inputname').value;
@@ -226,6 +258,7 @@ $data = "";
                 }
             }
         }
+
         function setdata(checkbox, count) {
             var cb = document.getElementById(checkbox);
             var m_input = document.querySelectorAll('#modal_body' + count + ' input[type="text"]')[0];
@@ -249,6 +282,7 @@ $data = "";
                 btn.disabled = true
             }
         }
+
         function addborrow() {
             var btn = document.getElementById('btnaddbor');
             var form = document.getElementById('formdata');
@@ -260,6 +294,7 @@ $data = "";
                 ch = 0;
             }
         }
+
         function checkinput(input, btn) {
             var btn = document.getElementById(btn);
             if (input.value != '') {
@@ -268,10 +303,12 @@ $data = "";
                 btn.disabled = true
             }
         }
+
         function adddata() {
             var formdata = document.getElementById('formdata');
             var data = formdata.getElementsByTagName('Input');
         }
+
         function xml_item(selectid, ref) {
             var select = document.getElementById(selectid);
             var xml = new XMLHttpRequest();
@@ -288,4 +325,5 @@ $data = "";
         }
     </script>
 </body>
+
 </html>
