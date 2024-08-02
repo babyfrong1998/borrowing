@@ -1,8 +1,26 @@
 <?php
 session_start();
-include "connect.php";
-$data = "";
+include "../connect.php";
+
+// ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
+if (!isset($_SESSION['username'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// ดึงข้อมูลผู้ใช้จาก Session
+$fname = $_SESSION['u_fname'];
+$lname = $_SESSION['u_lname'];
+$address = $_SESSION['u_address'];
+
+// ดึงข้อมูลเบอร์หน่วยงานจากฐานข้อมูล
+$sql = "SELECT number, Agency FROM office WHERE number = '$address'";
+$result = mysqli_query($conn, $sql);
+$office_data = mysqli_fetch_assoc($result);
+$office_number = $office_data['number'];
+$office_agency = $office_data['Agency'];
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -44,13 +62,13 @@ $data = "";
         <div class="row">
             <div class="col-md-2">
                 <div class="row" id="tools">
-                    <a href="index.php">
+                    <a href="../index.php">
                         <button type="button" id="menu" class="btn btn-info col-12">ออกจากระบบ</button>
                     </a>
                 </div>
             </div>
             <div class="col-md-10">
-                <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">ขอยืมครุภัณฑ์</button>
+                <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">ขอยืมอุปกรณ์ IT</button>
                 <br>
                 <form action="getSql.php" method="POST" class="row g-3" id="formdata" style="display: none">
                     <div class="row">
@@ -58,23 +76,11 @@ $data = "";
                         <hr>
                         <div class="col-md-4">
                             <label for="inputname" class="form-label">ชื่อผู้ยืม</label>
-                            <input type="code" class="form-control" onkeyup="submit_btn()" name="borname" id="inputname">
+                            <input type="text" class="form-control" name="borname" id="inputname" value="<?php echo $fname . ' ' . $lname; ?>" readonly>
                         </div>
                         <div class="col-md-4" id="office_b">
-                            <label for="inputtel" class="form-label">เบอร์หน่วยงาน </label>
-                            <select name="office" class="selectpicker w-100" id="s_select" onchange="submit_btn()" data-live-search="true">
-                                <option value="">----</option>
-                                <?php
-                                $office = "SELECT  * FROM `office`  ";
-                                if ($rs = mysqli_query($conn, $office)) {
-                                    while ($row = mysqli_fetch_assoc($rs)) {
-                                ?>
-                                        <option value="<?php echo  $row['number'] ?>"><?php echo $row['number'] . " " . $row['Agency'] ?></option>
-                                <?php
-                                    }
-                                }
-                                ?>
-                            </select>
+                            <label for="inputtel" class="form-label">เบอร์หน่วยงาน</label>
+                            <input type="text" class="form-control" name="office" id="inputtel" value="<?php echo $office_number . ' ' . $office_agency; ?>" readonly>
                         </div>
                         <div class="col-md-4">
                             <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
@@ -163,7 +169,8 @@ $data = "";
                             <thead>
                                 <tr>
                                     <th>ลำดับ</th>
-                                    <th>ประเภทอุปกรณ์</th>
+                                    <th>ชื่อประเภท</th>
+                                    <th>รหัสอุปกรณ์</th>
                                     <th>วันที่ยืม</th>
                                     <th>วันที่คืน</th>
                                     <th>สถานะ</th>
@@ -172,12 +179,13 @@ $data = "";
                             </thead>
                             <tbody>
                                 <?php
-                                $sql = "SELECT b_id, b_name, b_date, b_return, b_status FROM borrowing";
+                                $sql = "SELECT b.b_id, b.b_name, b.b_date, b.b_return, b.b_status,it.type_name FROM borrowing b JOIN items_1 i ON b.b_name = i.ag_id JOIN item_type it ON i.ag_type = it.type_id";
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     while ($row = $result->fetch_assoc()) {
                                         echo "<tr>";
                                         echo "<td>" . $row["b_id"] . "</td>";
+                                        echo "<td>" . $row["type_name"] . "</td>";
                                         echo "<td>" . $row["b_name"] . "</td>";
                                         echo "<td>" . $row["b_date"] . "</td>";
                                         echo "<td>" . $row["b_return"] . "</td>";
@@ -186,7 +194,7 @@ $data = "";
                                         echo "</tr>";
                                     }
                                 } else {
-                                    echo "<tr><td colspan='6'>No data found</td></tr>";
+                                    echo "<tr><td colspan='7'>No data found</td></tr>";
                                 }
                                 $conn->close();
                                 ?>
