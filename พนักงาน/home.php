@@ -4,15 +4,18 @@ include "../connect.php";
 
 // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
-
+if (!isset($_SESSION['u_id'])) {
+    echo "Error: User ID is not set in session.";
+    exit();
+}
 // ดึงข้อมูลผู้ใช้จาก Session
 $fname = $_SESSION['u_fname'];
 $lname = $_SESSION['u_lname'];
 $address = $_SESSION['u_address'];
-
+$u_id = $_SESSION['u_id'];
 // ดึงข้อมูลเบอร์หน่วยงานจากฐานข้อมูล
 $sql = "SELECT number, Agency FROM office WHERE number = '$address'";
 $result = mysqli_query($conn, $sql);
@@ -91,10 +94,10 @@ $office_agency = $office_data['Agency'];
                         <hr>
                         <div class="col-md-6">
                             <label for="inputcategory" class="form-label">ประเภทครุภัณฑ์</label>
-                            <select id="inputcategory" name="item_type" onchange="xml_item('itemselect',this.value),submit_btn()" class="selectpicker s_select w-100" data-live-search="true">
+                            <select id="inputcategory" name="item_type" class="selectpicker s_select w-100" data-live-search="true" onchange="updateItemCodes(this.value)">
                                 <option value="">----</option>
                                 <?php
-                                $sql = "SELECT DISTINCT `type_name` as type ,`type_id`  FROM item_type; ";
+                                $sql = "SELECT DISTINCT `type_name` as type ,`type_id` FROM item_type;";
                                 if ($result = mysqli_query($conn, $sql)) {
                                     while ($r = mysqli_fetch_assoc($result)) {
                                 ?>
@@ -107,14 +110,18 @@ $office_agency = $office_data['Agency'];
                         </div>
                         <div class="col-md-6 mt-2">
                             <label for="inputcode" class="form-label">รหัสครุภัณฑ์</label>
-                            <select id="itemselect" name="itemselect" onchange="submit_btn()" class="selectpicker s_select w-100" data-live-search="true">
+                            <select id="itemselect" name="itemselect" class="selectpicker s_select w-100" data-live-search="true">
                             </select>
                         </div>
-                        <div class="col-md-6">
-                        </div>
+                        <div class="col-md-6"></div>
                     </div>
-                    <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid" disabled>
+                    <input type="hidden" name="u_id" value="<?php echo $u_id; ?>">
+                    <input type="hidden" name="b_status" value="ยืม">
+                    <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid" >
                 </form>
+
+
+
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card">
@@ -247,50 +254,6 @@ $office_agency = $office_data['Agency'];
             $('#itemstb').dataTable();
         });
 
-        function submit_btn() {
-            var check_input = [];
-            check_input[0] = document.getElementById('inputname').value;
-            check_input[1] = document.getElementById('inputcategory').value;
-            check_input[2] = document.getElementById('bordate').value;
-            check_input[3] = document.getElementById('s_select').value;
-            check_input[4] = document.getElementById('itemselect').value;
-            var btn = document.getElementById('submid');
-            for (var i = 0; i < check_input.length; i++) {
-                if (check_input[i] == "") {
-                    btn.setAttribute('class', 'btn btn-light');
-                    btn.disabled = true;
-                    break;
-                } else {
-                    btn.setAttribute('class', 'btn btn-success');
-                    btn.disabled = false;
-                }
-            }
-        }
-
-        function setdata(checkbox, count) {
-            var cb = document.getElementById(checkbox);
-            var m_input = document.querySelectorAll('#modal_body' + count + ' input[type="text"]')[0];
-            var getdata = document.querySelectorAll('#getdata' + count + ' label');
-            var select_r = document.querySelectorAll('#modal_body' + count + ' select')[0];
-            var btn = document.querySelectorAll('#exampleModal' + count + ' input[type="submit"]')[0];
-            var op = select_r.getElementsByTagName('option');
-            if (cb.checked == true) {
-                m_input.value = getdata[0].innerHTML;
-                btn.disabled = false;
-                for (var i = 0; i < op.length; i++) {
-                    if (op[i].value == getdata[1].innerHTML) {
-                        op[i].selected = true;
-                        $('#modal_body' + count + ' .selectpicker').selectpicker('val', getdata[1].innerHTML);
-                    }
-                }
-                console.log(select_r.value);
-                $('.s_select').selectpicker('refresh');
-            } else {
-                m_input.value = "";
-                btn.disabled = true
-            }
-        }
-
         function addborrow() {
             var btn = document.getElementById('btnaddbor');
             var form = document.getElementById('formdata');
@@ -303,33 +266,26 @@ $office_agency = $office_data['Agency'];
             }
         }
 
-        function checkinput(input, btn) {
-            var btn = document.getElementById(btn);
-            if (input.value != '') {
-                btn.disabled = false
-            } else {
-                btn.disabled = true
-            }
-        }
-
         function adddata() {
             var formdata = document.getElementById('formdata');
             var data = formdata.getElementsByTagName('Input');
         }
 
-        function xml_item(selectid, ref) {
-            var select = document.getElementById(selectid);
-            var xml = new XMLHttpRequest();
-            select.innerHTML = "";
-            xml.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    select.innerHTML = "";
-                    select.innerHTML += this.responseText;
-                    $('.s_select').selectpicker('refresh');
+        function updateItemCodes(typeId) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'getItemCodes.php?type_id=' + typeId, true);
+            xhr.onload = function() {
+                if (this.status === 200) {
+                    const agIds = JSON.parse(this.responseText);
+                    let options = '';
+                    agIds.forEach(function(ag) {
+                        options += `<option value="${ag.ag_id}">${ag.ag_id}</option>`;
+                    });
+                    document.getElementById('itemselect').innerHTML = options;
+                    $('.selectpicker').selectpicker('refresh');
                 }
-            }
-            xml.open("GET", "getSql.php?sql=" + ref);
-            xml.send();
+            };
+            xhr.send();
         }
     </script>
 </body>

@@ -7,7 +7,7 @@ if(isset($_POST['username']) && isset($_POST['password'])){
     $password = mysqli_real_escape_string($conn, $_POST['password']);
 
     // คำสั่ง SQL เพื่อดึงข้อมูลชื่อผู้ใช้ รหัสผ่าน และสถานะ
-    $sql = "SELECT u_username, u_password, u_fname, u_lname, u_address, u_status_id FROM users WHERE u_username = '$username' AND u_password = '$password'";
+    $sql = "SELECT u_username, u_password, u_fname, u_lname, u_address, u_status_id, u_id FROM users WHERE u_username = '$username' AND u_password = '$password'";
     $result = mysqli_query($conn, $sql);
 
     if($result){
@@ -22,7 +22,7 @@ if(isset($_POST['username']) && isset($_POST['password'])){
                 $_SESSION['u_fname'] = $row['u_fname'];
                 $_SESSION['u_lname'] = $row['u_lname'];
                 $_SESSION['u_address'] = $row['u_address'];
-                
+                $_SESSION['u_id'] = $row['u_id']; 
                 header("Location: พนักงาน/home.php");
                 exit();
             } elseif($u_status_id == 2){
