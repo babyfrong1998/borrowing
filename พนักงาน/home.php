@@ -1,7 +1,6 @@
 <?php
 session_start();
 include "../connect.php";
-
 // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
 if (!isset($_SESSION['username'])) {
     header("Location: index.php");
@@ -22,8 +21,8 @@ $result = mysqli_query($conn, $sql);
 $office_data = mysqli_fetch_assoc($result);
 $office_number = $office_data['number'];
 $office_agency = $office_data['Agency'];
-?>
 
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -56,12 +55,21 @@ $office_agency = $office_data['Agency'];
         background-color: turquoise;
         font-weight: bold;
     }
+    .return-button {
+    background-color: orange;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.return-button:hover {
+    background-color: darkorange;
+}
 </style>
 
 <body>
     <h2 id="nav">ระบบบันทึกการยืม-คืน</h2>
     <div class="container">
-
         <div class="row">
             <div class="col-md-2">
                 <div class="row" id="tools">
@@ -84,11 +92,17 @@ $office_agency = $office_data['Agency'];
                         <div class="col-md-4" id="office_b">
                             <label for="inputtel" class="form-label">เบอร์หน่วยงาน</label>
                             <input type="text" class="form-control" name="office" id="inputtel" value="<?php echo $office_number . ' ' . $office_agency; ?>" readonly>
+                            <input type="hidden" name="office" value="<?php echo $office_number; ?>">
                         </div>
                         <div class="col-md-4">
                             <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
                             <br>
                             <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="returnDate" class="form-label" style="margin-top: 1%;">กำหนดวันคืน</label>
+                            <br>
+                            <input type="datetime-local" class="form-control w-100" id="returnDate" name="returnDate">
                         </div>
                         <label id="headline">ข้อมูลครุภัณฑ์</label>
                         <hr>
@@ -117,11 +131,8 @@ $office_agency = $office_data['Agency'];
                     </div>
                     <input type="hidden" name="u_id" value="<?php echo $u_id; ?>">
                     <input type="hidden" name="b_status" value="ยืม">
-                    <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid" >
+                    <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid">
                 </form>
-
-
-
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card">
@@ -186,19 +197,27 @@ $office_agency = $office_data['Agency'];
                             </thead>
                             <tbody>
                                 <?php
-                                $sql = "SELECT b.b_id, b.b_name, b.b_date, b.b_return, b.b_status,it.type_name FROM borrowing b JOIN items_1 i ON b.b_name = i.ag_id JOIN item_type it ON i.ag_type = it.type_id";
+                                // Filter records by u_id
+                                $sql = "SELECT b.b_id, b.b_name, b.b_date, b.b_return, sl.st_name AS b_status, it.type_name 
+                                        FROM borrowing b 
+                                        JOIN items_1 i ON b.b_name = i.ag_id 
+                                        JOIN item_type it ON i.ag_type = it.type_id 
+                                        JOIN statuslist sl ON b.b_status = st_id
+                                        WHERE b.b_borower = '$u_id'";
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
+                                    $i = 1; // Initialize counter for numbering
                                     while ($row = $result->fetch_assoc()) {
                                         echo "<tr>";
-                                        echo "<td>" . $row["b_id"] . "</td>";
+                                        echo "<td>" . $i . "</td>"; // Display the sequence number
                                         echo "<td>" . $row["type_name"] . "</td>";
                                         echo "<td>" . $row["b_name"] . "</td>";
                                         echo "<td>" . $row["b_date"] . "</td>";
                                         echo "<td>" . $row["b_return"] . "</td>";
                                         echo "<td>" . $row["b_status"] . "</td>";
-                                        echo "<td></td>";
+                                        echo "<td><button class='return-button' onclick=\"returnItem('" . $row['b_id'] . "')\">คืน</button></td>";
                                         echo "</tr>";
+                                        $i++; // Increment the counter
                                     }
                                 } else {
                                     echo "<tr><td colspan='7'>No data found</td></tr>";
@@ -287,6 +306,17 @@ $office_agency = $office_data['Agency'];
             };
             xhr.send();
         }
+
+        document.getElementById('formdata').addEventListener('submit', function(event) {
+            var bordate = document.getElementById('bordate').value;
+            var itemselect = document.getElementById('itemselect').value;
+
+            // ตรวจสอบข้อมูลในช่อง 'วันที่ยืม' และ 'รหัสครุภัณฑ์'
+            if (!bordate || !itemselect) {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                event.preventDefault(); // ป้องกันการส่งฟอร์ม
+            }
+        });
     </script>
 </body>
 

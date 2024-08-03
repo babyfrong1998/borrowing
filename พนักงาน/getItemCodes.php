@@ -1,15 +1,16 @@
 <?php
 include "../connect.php";
 
-if (isset($_GET['type_id'])) {
-    $type_id = $_GET['type_id'];
-    $sql = "SELECT ag_id FROM items_1 WHERE ag_type = '$type_id'";
-    $result = mysqli_query($conn, $sql);
-    
-    $agIds = array();
-    while ($row = mysqli_fetch_assoc($result)) {
-        $agIds[] = $row;
-    }
-    echo json_encode($agIds);
+$type_id = $_GET['type_id'];
+
+// Query to select only items with ag_status = 'ST001'
+$sql = "SELECT ag_id FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
+$result = mysqli_query($conn, $sql);
+
+$items = array();
+while ($row = mysqli_fetch_assoc($result)) {
+    $items[] = $row;
 }
+
+echo json_encode($items);
 ?>
