@@ -26,6 +26,11 @@ if(isset($_POST['username']) && isset($_POST['password'])){
                 header("Location: พนักงาน/home.php");
                 exit();
             } elseif($u_status_id == 2){
+                $_SESSION['username'] = $row['u_username'];
+                $_SESSION['u_fname'] = $row['u_fname'];
+                $_SESSION['u_lname'] = $row['u_lname'];
+                $_SESSION['u_address'] = $row['u_address'];
+                $_SESSION['u_id'] = $row['u_id'];
                 header("Location: ช่างIT/home_it.php");
                 exit();
             } elseif($u_status_id == 3){

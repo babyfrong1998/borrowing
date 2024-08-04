@@ -1,7 +1,21 @@
 <?php
 session_start();
 include "../connect.php";
-$data = "";
+// ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
+if (!isset($_SESSION['username'])) {
+    header("Location: index.php");
+    exit();
+}
+if (!isset($_SESSION['u_id'])) {
+    echo "Error: User ID is not set in session.";
+    exit();
+}
+// ดึงข้อมูลผู้ใช้จาก Session
+$fname = $_SESSION['u_fname'];
+$lname = $_SESSION['u_lname'];
+$address = $_SESSION['u_address'];
+$u_id = $_SESSION['u_id'];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +34,7 @@ $data = "";
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
     <link rel="stylesheet" href="styles.css">
-    <title>ช่าง IT</title>
+    <title>ระบบของช่าง IT</title>
 </head>
 <style>
     body {
@@ -38,9 +52,8 @@ $data = "";
 </style>
 
 <body>
-    <h2 id="nav">ระบบบันทึกการยืม-คืน</h2>
+    <h2 id="nav">ระบบของช่าง IT</h2>
     <div class="container">
-
         <div class="row">
             <div class="col-md-2">
                 <div class="row" id="tools">
@@ -50,79 +63,34 @@ $data = "";
                 </div>
             </div>
             <div class="col-md-10">
-                <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">ขอยืมครุภัณฑ์</button>
+                <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
                 <br>
-                <form action="getSql.php" method="POST" class="row g-3" id="formdata" style="display: none">
-                    <div class="row">
-                        <label id="headline">ข้อมูลผู้ยืม</label>
-                        <hr>
-                        <div class="col-md-4">
-                            <label for="inputname" class="form-label">ชื่อผู้ยืม</label>
-                            <input type="code" class="form-control" onkeyup="submit_btn()" name="borname" id="inputname">
-                        </div>
-                        <div class="col-md-4" id="office_b">
-                            <label for="inputtel" class="form-label">เบอร์หน่วยงาน </label>
-                            <select name="office" class="selectpicker w-100" id="s_select" onchange="submit_btn()" data-live-search="true">
-                                <option value="">----</option>
-                                <?php
-                                $office = "SELECT  * FROM `office`  ";
-                                if ($rs = mysqli_query($conn, $office)) {
-                                    while ($row = mysqli_fetch_assoc($rs)) {
-                                ?>
-                                        <option value="<?php echo  $row['number'] ?>"><?php echo $row['number'] . " " . $row['Agency'] ?></option>
-                                <?php
-                                    }
-                                }
-                                ?>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
-                            <br>
-                            <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate">
-                        </div>
-                        <label id="headline">ข้อมูลครุภัณฑ์</label>
-                        <hr>
-                        <div class="col-md-6">
-                            <label for="inputcategory" class="form-label">ประเภทครุภัณฑ์</label>
-                            <select id="inputcategory" name="item_type" onchange="xml_item('itemselect',this.value),submit_btn()" class="selectpicker s_select w-100" data-live-search="true">
-                                <option value="">----</option>
-                                <?php
-                                $sql = "SELECT DISTINCT `type_name` as type ,`type_id`  FROM item_type; ";
-                                if ($result = mysqli_query($conn, $sql)) {
-                                    while ($r = mysqli_fetch_assoc($result)) {
-                                ?>
-                                        <option value="<?php echo $r['type_id'] ?>"><?php echo $r['type'] ?></option>
-                                <?php
-                                    }
-                                }
-                                ?>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mt-2">
-                            <label for="inputcode" class="form-label">รหัสครุภัณฑ์</label>
-                            <select id="itemselect" name="itemselect" onchange="submit_btn()" class="selectpicker s_select w-100" data-live-search="true">
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                        </div>
-                    </div>
-                    <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid" disabled>
-                </form>
+                
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-body">
                                 <?php
-                                $sql = "SELECT COUNT(*) as 'NB' FROM `items_1` WHERE `ag_type`='T001'AND `ag_status`='ST001'";
-                                $result = $conn->query($sql);
-                                while ($row = $result->fetch_assoc()) {
-                                    $NB = $row['NB'];
+                                $sql1 = "SELECT COUNT(*) as 'nb' FROM `items_1` WHERE `ag_type`='T001' AND `ag_status`='ST001'";
+                                $result1 = $conn->query($sql1);
+                                $nb = 0; // Initialize variable
+                                if ($result1->num_rows > 0) {
+                                    $row = $result1->fetch_assoc();
+                                    $nb = $row['nb'];
                                 }
+                                $sql2 = "SELECT COUNT(*) as 'nb1' FROM `items_1` WHERE `ag_type`='T001' AND (`ag_status`='ST002' OR `ag_status`='ST005')";
+                                $result2 = $conn->query($sql2);
+                                $nb1 = 0; // Initialize variable
+                                if ($result2->num_rows > 0) {
+                                    $row = $result2->fetch_assoc();
+                                    $nb1 = $row['nb1'];
+                                }
+
                                 ?>
                                 <h5 class="card-title">คอมพิวเตอร์</h5>
-                                <p class="card-text">จำนวนคงเหลือ <?php echo $NB
-                                                                    ?></p>
+                                <p class="card-text">จำนวนคงเหลือ <?php echo $nb; ?></p>
+                                <p class="card-text">จำนวนที่ถูกยืม <?php echo $nb1; ?></p>
+                                <p class="card-text">จำนวนทั้งหมด <?php echo ($nb1 + $nb); ?></p>
                             </div>
                         </div>
                     </div>
@@ -130,15 +98,25 @@ $data = "";
                         <div class="card">
                             <div class="card-body">
                                 <?php
-                                $sql = "SELECT COUNT(*) as 'ph' FROM `items_1` WHERE `ag_type`='T002'AND `ag_status`='ST001'";
-                                $result = $conn->query($sql);
-                                while ($row = $result->fetch_assoc()) {
+                                $sql1 = "SELECT COUNT(*) as 'ph' FROM `items_1` WHERE `ag_type`='T002' AND `ag_status`='ST001'";
+                                $result1 = $conn->query($sql1);
+                                $ph = 0; // Initialize variable
+                                if ($result1->num_rows > 0) {
+                                    $row = $result1->fetch_assoc();
                                     $ph = $row['ph'];
+                                }
+                                $sql2 = "SELECT COUNT(*) as 'ph1' FROM `items_1` WHERE `ag_type`='T002' AND (`ag_status`='ST002' OR `ag_status`='ST005')";
+                                $result2 = $conn->query($sql2);
+                                $ph1 = 0; // Initialize variable
+                                if ($result2->num_rows > 0) {
+                                    $row = $result2->fetch_assoc();
+                                    $ph1 = $row['ph1'];
                                 }
                                 ?>
                                 <h5 class="card-title">หน้าจอ</h5>
-                                <p class="card-text">จำนวนคงเหลือ <?php echo $ph
-                                                                    ?></p>
+                                <p class="card-text">จำนวนคงเหลือ <?php echo $ph; ?></p>
+                                <p class="card-text">จำนวนที่ถูกยืม <?php echo $ph1; ?></p>
+                                <p class="card-text">จำนวนทั้งหมด <?php echo ($ph1 + $ph); ?></p>
                             </div>
                         </div>
                     </div>
@@ -146,47 +124,77 @@ $data = "";
                         <div class="card">
                             <div class="card-body">
                                 <?php
-                                $sql = "SELECT COUNT(*) as 'sc' FROM `items_1` WHERE `ag_type`='T003'AND `ag_status`='ST001'";
-                                $result = $conn->query($sql);
-                                while ($row = $result->fetch_assoc()) {
+                                // Query to count available items
+                                $sql1 = "SELECT COUNT(*) as 'sc' FROM `items_1` WHERE `ag_type`='T003' AND `ag_status`='ST001'";
+                                $result1 = $conn->query($sql1);
+                                $sc = 0; // Initialize variable
+                                if ($result1->num_rows > 0) {
+                                    $row = $result1->fetch_assoc();
                                     $sc = $row['sc'];
+                                }
+
+                                // Query to count borrowed items
+                                $sql2 = "SELECT COUNT(*) as 'sc1' FROM `items_1` WHERE `ag_type`='T003' AND (`ag_status`='ST002' OR `ag_status`='ST005')";
+                                $result2 = $conn->query($sql2);
+                                $sc1 = 0; // Initialize variable
+                                if ($result2->num_rows > 0) {
+                                    $row = $result2->fetch_assoc();
+                                    $sc1 = $row['sc1'];
                                 }
                                 ?>
                                 <h5 class="card-title">โทรศัพท์</h5>
-                                <p class="card-text">จำนวนคงเหลือ <?php echo $sc
-                                                                    ?></p>
+                                <p class="card-text">จำนวนคงเหลือ <?php echo $sc; ?></p>
+                                <p class="card-text">จำนวนที่ถูกยืม <?php echo $sc1; ?></p>
+                                <p class="card-text">จำนวนทั้งหมด <?php echo ($sc1 + $sc); ?></p>
                             </div>
+
                         </div>
                     </div>
                     <div class="col-md-12">
-                        <table id="borrow_table" class="table display" style="width:100%;margin-top :20px;">
+                        <table id="itmes_1" class="table display" style="width:100%;margin-top :20px;">
                             <thead>
                                 <tr>
                                     <th>ลำดับ</th>
-                                    <th>ประเภทอุปกรณ์</th>
-                                    <th>วันที่ยืม</th>
-                                    <th>วันที่คืน</th>
+                                    <th>ชื่อประเภท</th>
+                                    <th>รหัสอุปกรณ์</th>
                                     <th>สถานะ</th>
-                                    <th></th>
+                                    <th>คนยืม</th>
+                                    <th>หน่วยงาน</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
-                                $sql = "SELECT b_id, b_name, b_date, b_return, b_status FROM borrowing";
+                                $sql = "SELECT i.ag_id, it.type_name, i.ag_status, 
+                                                (SELECT CONCAT(u.u_fname, ' ', u.u_lname) 
+                                                 FROM borrowing b 
+                                                 JOIN users u ON b.b_borower = u.u_id 
+                                                 WHERE b.b_name = i.ag_id 
+                                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005') LIMIT 1) AS borrower_name,
+                                                (SELECT u.u_address 
+                                                 FROM borrowing b 
+                                                 JOIN users u ON b.b_borower = u.u_id 
+                                                 WHERE b.b_name = i.ag_id 
+                                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005') LIMIT 1) AS borrower_office 
+                                         FROM items_1 i 
+                                         JOIN item_type it ON i.ag_type = it.type_id";
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
+                                    $i = 1; // Initialize counter for numbering
                                     while ($row = $result->fetch_assoc()) {
                                         echo "<tr>";
-                                        echo "<td>" . $row["b_id"] . "</td>";
-                                        echo "<td>" . $row["b_name"] . "</td>";
-                                        echo "<td>" . $row["b_date"] . "</td>";
-                                        echo "<td>" . $row["b_return"] . "</td>";
-                                        echo "<td>" . $row["b_status"] . "</td>";
-                                        echo "<td></td>";
+                                        echo "<td>" . $i . "</td>"; // Display the sequence number
+                                        echo "<td>" . $row["type_name"] . "</td>";
+                                        echo "<td>" . $row["ag_id"] . "</td>";
+                                        echo "<td>" . $row["ag_status"] . "</td>";
+                                        echo "<td>" . ($row["borrower_name"] ? $row["borrower_name"] : "") . "</td>";
+                                        echo "<td>" . ($row["borrower_office"] ? $row["borrower_office"] : "") . "</td>";
+                                        echo "<td><button class='return-button' onclick=\"returnItem('" . $row['ag_id'] . "')\">คืน</button></td>";
                                         echo "</tr>";
+                                        $i++; // Increment the counter
                                     }
                                 } else {
-                                    echo "<tr><td colspan='6'>No data found</td></tr>";
+                                    echo "<tr><td colspan='7'>No data found</td></tr>";
                                 }
                                 $conn->close();
                                 ?>
@@ -205,7 +213,7 @@ $data = "";
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#borrow_table').DataTable();
+            $('#itmes_1').DataTable();
         });
 
         function addborrow() {
@@ -238,91 +246,6 @@ $data = "";
             $('.s_select').selectpicker();
             $('#itemstb').dataTable();
         });
-
-        function submit_btn() {
-            var check_input = [];
-            check_input[0] = document.getElementById('inputname').value;
-            check_input[1] = document.getElementById('inputcategory').value;
-            check_input[2] = document.getElementById('bordate').value;
-            check_input[3] = document.getElementById('s_select').value;
-            check_input[4] = document.getElementById('itemselect').value;
-            var btn = document.getElementById('submid');
-            for (var i = 0; i < check_input.length; i++) {
-                if (check_input[i] == "") {
-                    btn.setAttribute('class', 'btn btn-light');
-                    btn.disabled = true;
-                    break;
-                } else {
-                    btn.setAttribute('class', 'btn btn-success');
-                    btn.disabled = false;
-                }
-            }
-        }
-
-        function setdata(checkbox, count) {
-            var cb = document.getElementById(checkbox);
-            var m_input = document.querySelectorAll('#modal_body' + count + ' input[type="text"]')[0];
-            var getdata = document.querySelectorAll('#getdata' + count + ' label');
-            var select_r = document.querySelectorAll('#modal_body' + count + ' select')[0];
-            var btn = document.querySelectorAll('#exampleModal' + count + ' input[type="submit"]')[0];
-            var op = select_r.getElementsByTagName('option');
-            if (cb.checked == true) {
-                m_input.value = getdata[0].innerHTML;
-                btn.disabled = false;
-                for (var i = 0; i < op.length; i++) {
-                    if (op[i].value == getdata[1].innerHTML) {
-                        op[i].selected = true;
-                        $('#modal_body' + count + ' .selectpicker').selectpicker('val', getdata[1].innerHTML);
-                    }
-                }
-                console.log(select_r.value);
-                $('.s_select').selectpicker('refresh');
-            } else {
-                m_input.value = "";
-                btn.disabled = true
-            }
-        }
-
-        function addborrow() {
-            var btn = document.getElementById('btnaddbor');
-            var form = document.getElementById('formdata');
-            if (ch == 0) {
-                form.style.display = 'block';
-                ch = 1;
-            } else {
-                form.style.display = 'none';
-                ch = 0;
-            }
-        }
-
-        function checkinput(input, btn) {
-            var btn = document.getElementById(btn);
-            if (input.value != '') {
-                btn.disabled = false
-            } else {
-                btn.disabled = true
-            }
-        }
-
-        function adddata() {
-            var formdata = document.getElementById('formdata');
-            var data = formdata.getElementsByTagName('Input');
-        }
-
-        function xml_item(selectid, ref) {
-            var select = document.getElementById(selectid);
-            var xml = new XMLHttpRequest();
-            select.innerHTML = "";
-            xml.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    select.innerHTML = "";
-                    select.innerHTML += this.responseText;
-                    $('.s_select').selectpicker('refresh');
-                }
-            }
-            xml.open("GET", "getSql.php?sql=" + ref);
-            xml.send();
-        }
     </script>
 </body>
 

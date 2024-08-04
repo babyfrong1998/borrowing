@@ -87,12 +87,11 @@ $office_agency = $office_data['Agency'];
                         <hr>
                         <div class="col-md-4">
                             <label for="inputname" class="form-label">ชื่อผู้ยืม</label>
-                            <input type="text" class="form-control" name="borname" id="inputname" value="<?php echo $fname . ' ' . $lname; ?>" readonly>
+                            
                         </div>
                         <div class="col-md-4" id="office_b">
                             <label for="inputtel" class="form-label">เบอร์หน่วยงาน</label>
-                            <input type="text" class="form-control" name="office" id="inputtel" value="<?php echo $office_number . ' ' . $office_agency; ?>" readonly>
-                            <input type="hidden" name="office" value="<?php echo $office_number; ?>">
+                            
                         </div>
                         <div class="col-md-4">
                             <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
@@ -130,7 +129,6 @@ $office_agency = $office_data['Agency'];
                         <div class="col-md-6"></div>
                     </div>
                     <input type="hidden" name="u_id" value="<?php echo $u_id; ?>">
-                    <input type="hidden" name="b_status" value="ยืม">
                     <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid">
                 </form>
                 <div class="row">
