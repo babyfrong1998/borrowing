@@ -15,7 +15,7 @@ $b_agency = $_POST['office'];
 $return_date = isset($_POST['returnDate']) ? $_POST['returnDate'] : '';
 
 // กำหนดค่า b_status และ b_return ตามการกำหนด returnDate
-$b_status = $return_date ? 'ST005' : 'ST002';
+$b_status =  'ST007' ;
 $b_return = $return_date ? $return_date : '';
 
 // ตรวจสอบค่าก่อนแทรก

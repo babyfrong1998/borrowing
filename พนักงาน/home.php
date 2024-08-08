@@ -55,16 +55,18 @@ $office_agency = $office_data['Agency'];
         background-color: turquoise;
         font-weight: bold;
     }
+
     .return-button {
-    background-color: orange;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-.return-button:hover {
-    background-color: darkorange;
-}
+        background-color: orange;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    .return-button:hover {
+        background-color: darkorange;
+    }
 </style>
 
 <body>
@@ -87,11 +89,12 @@ $office_agency = $office_data['Agency'];
                         <hr>
                         <div class="col-md-4">
                             <label for="inputname" class="form-label">ชื่อผู้ยืม</label>
-                            
+                            <input type="text" class="form-control" name="borname" id="inputname" value="<?php echo $fname . ' ' . $lname; ?>" readonly>
                         </div>
                         <div class="col-md-4" id="office_b">
                             <label for="inputtel" class="form-label">เบอร์หน่วยงาน</label>
-                            
+                            <input type="text" class="form-control" name="office" id="inputtel" value="<?php echo $office_number . ' ' . $office_agency; ?>" readonly>
+                            <input type="hidden" name="office" value="<?php echo $office_number; ?>">
                         </div>
                         <div class="col-md-4">
                             <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
@@ -196,12 +199,14 @@ $office_agency = $office_data['Agency'];
                             <tbody>
                                 <?php
                                 // Filter records by u_id
-                                $sql = "SELECT b.b_id, b.b_name, b.b_date, b.b_return, sl.st_name AS b_status, it.type_name 
-                                        FROM borrowing b 
-                                        JOIN items_1 i ON b.b_name = i.ag_id 
-                                        JOIN item_type it ON i.ag_type = it.type_id 
-                                        JOIN statuslist sl ON b.b_status = st_id
-                                        WHERE b.b_borower = '$u_id'";
+                                $sql = "SELECT b.b_id, b.b_name, b.b_date, b.b_return, b.b_status, sl.st_name, it.type_name 
+        FROM borrowing b 
+        JOIN items_1 i ON b.b_name = i.ag_id 
+        JOIN item_type it ON i.ag_type = it.type_id 
+        JOIN statuslist sl ON b.b_status = sl.st_id
+        WHERE b.b_borower = '$u_id'";
+
+
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     $i = 1; // Initialize counter for numbering
@@ -212,14 +217,21 @@ $office_agency = $office_data['Agency'];
                                         echo "<td>" . $row["b_name"] . "</td>";
                                         echo "<td>" . $row["b_date"] . "</td>";
                                         echo "<td>" . $row["b_return"] . "</td>";
-                                        echo "<td>" . $row["b_status"] . "</td>";
-                                        echo "<td><button class='return-button' onclick=\"returnItem('" . $row['b_id'] . "')\">คืน</button></td>";
+                                        echo "<td>" . $row["st_name"] . "</td>";
+
+                                        if ($row["b_status"] == 'ST002' || $row["b_status"] == 'ST005') {
+                                            echo "<td><button class='return-button' onclick=\"returnItem('" . $row['b_id'] . "')\">คืน</button></td>";
+                                        } else {
+                                            echo "<td></td>"; // Empty cell if condition is not met
+                                        }
+
                                         echo "</tr>";
                                         $i++; // Increment the counter
                                     }
                                 } else {
                                     echo "<tr><td colspan='7'>No data found</td></tr>";
                                 }
+
                                 $conn->close();
                                 ?>
                             </tbody>
@@ -294,7 +306,7 @@ $office_agency = $office_data['Agency'];
             xhr.onload = function() {
                 if (this.status === 200) {
                     const agIds = JSON.parse(this.responseText);
-                    let options = '';
+                    let options = '<option value="">-- เลือกรหัสครุภัณฑ์ --</option>';
                     agIds.forEach(function(ag) {
                         options += `<option value="${ag.ag_id}">${ag.ag_id}</option>`;
                     });
@@ -315,6 +327,26 @@ $office_agency = $office_data['Agency'];
                 event.preventDefault(); // ป้องกันการส่งฟอร์ม
             }
         });
+
+        function returnItem(borrowId) {
+            console.log('Borrow ID: ', borrowId);
+            if (confirm('คุณต้องการคืนอุปกรณ์นี้หรือไม่?')) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'returnItem.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onload = function() {
+                    console.log('Response status: ', this.status);
+                    console.log('Response text: ', this.responseText);
+                    if (this.status === 200) {
+                        alert('การคืนสำเร็จ');
+                        location.reload();
+                    } else {
+                        alert('การคืนล้มเหลว: ' + this.responseText);
+                    }
+                };
+                xhr.send('borrowId=' + borrowId);
+            }
+        }
     </script>
 </body>
 

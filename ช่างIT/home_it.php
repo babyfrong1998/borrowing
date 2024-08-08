@@ -49,6 +49,11 @@ $u_id = $_SESSION['u_id'];
         background-color: turquoise;
         font-weight: bold;
     }
+
+    #addItemForm {
+        display: none;
+        margin-top: 20px;
+    }
 </style>
 
 <body>
@@ -65,7 +70,6 @@ $u_id = $_SESSION['u_id'];
             <div class="col-md-10">
                 <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
                 <br>
-                
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card">
@@ -165,19 +169,20 @@ $u_id = $_SESSION['u_id'];
                             </thead>
                             <tbody>
                                 <?php
-                                $sql = "SELECT i.ag_id, it.type_name, i.ag_status, 
-                                                (SELECT CONCAT(u.u_fname, ' ', u.u_lname) 
-                                                 FROM borrowing b 
-                                                 JOIN users u ON b.b_borower = u.u_id 
-                                                 WHERE b.b_name = i.ag_id 
-                                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005') LIMIT 1) AS borrower_name,
-                                                (SELECT u.u_address 
-                                                 FROM borrowing b 
-                                                 JOIN users u ON b.b_borower = u.u_id 
-                                                 WHERE b.b_name = i.ag_id 
-                                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005') LIMIT 1) AS borrower_office 
-                                         FROM items_1 i 
-                                         JOIN item_type it ON i.ag_type = it.type_id";
+                                $sql = "SELECT i.ag_id, it.type_name, i.ag_status,sl.st_name,  
+                                (SELECT CONCAT(u.u_fname, ' ', u.u_lname) 
+                                 FROM borrowing b 
+                                 JOIN users u ON b.b_borower = u.u_id 
+                                 WHERE b.b_name = i.ag_id 
+                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005'OR i.ag_status = 'ST008' OR i.ag_status = 'ST007') LIMIT 1) AS borrower_name,
+                                (SELECT u.u_address 
+                                 FROM borrowing b 
+                                 JOIN users u ON b.b_borower = u.u_id 
+                                 WHERE b.b_name = i.ag_id 
+                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005' OR i.ag_status = 'ST008' OR i.ag_status = 'ST007') LIMIT 1) AS borrower_office 
+                                 FROM items_1 i 
+                         JOIN item_type it ON i.ag_type = it.type_id 
+                         JOIN statuslist sl ON i.ag_status = sl.st_id";
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     $i = 1; // Initialize counter for numbering
@@ -186,10 +191,30 @@ $u_id = $_SESSION['u_id'];
                                         echo "<td>" . $i . "</td>"; // Display the sequence number
                                         echo "<td>" . $row["type_name"] . "</td>";
                                         echo "<td>" . $row["ag_id"] . "</td>";
-                                        echo "<td>" . $row["ag_status"] . "</td>";
+                                        echo "<td>" . $row["st_name"] . "</td>";
                                         echo "<td>" . ($row["borrower_name"] ? $row["borrower_name"] : "") . "</td>";
                                         echo "<td>" . ($row["borrower_office"] ? $row["borrower_office"] : "") . "</td>";
-                                        echo "<td><button class='return-button' onclick=\"returnItem('" . $row['ag_id'] . "')\">คืน</button></td>";
+
+                                        // Display the "คืน" button if status is ST002 or ST005
+                                        if ($row["ag_status"] == 'ST007') {
+                                            echo "<td>
+                                                    <form method='POST' action='approve_status.php' onsubmit='return confirmApprove()'>
+                                                        <input type='hidden' name='ag_id' value='" . $row["ag_id"] . "'>
+                                                        <button type='submit' class='btn btn-success'>อนุมัติการยืม</button>
+                                                    </form>
+                                                  </td>";
+                                        } else if ($row["ag_status"] == 'ST008' ) {
+                                            echo "<td>
+                                            <form method='POST' action='update_status.php' onsubmit='return confirmReturn()'>
+                                                <input type='hidden' name='ag_id' value='" . $row["ag_id"] . "'>
+                                                <input type='hidden' name='u_id' value='<?php echo $u_id; ?>'>
+                                                <button type='submit' class='btn btn-primary'>ยืนยันการคืนอุปกรณ์</button>
+                                            </form>
+                                          </td>";
+                                        } else {
+                                            echo "<td></td>"; // No button displayed
+                                        }
+
                                         echo "</tr>";
                                         $i++; // Increment the counter
                                     }
@@ -216,36 +241,13 @@ $u_id = $_SESSION['u_id'];
             $('#itmes_1').DataTable();
         });
 
-        function addborrow() {
-            var form = document.getElementById("formdata");
-            form.style.display = form.style.display === "none" ? "block" : "none";
+        function confirmReturn() {
+            return confirm("คุณแน่ใจหรือไม่ว่าต้องการคืนอุปกรณ์นี้?");
         }
 
-        function searchTable() {
-            var input, filter, table, tr, td, i, j, txtValue;
-            input = document.getElementById("searchInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("borrow_table");
-            tr = table.getElementsByTagName("tr");
-            for (i = 1; i < tr.length; i++) {
-                tr[i].style.display = "none";
-                td = tr[i].getElementsByTagName("td");
-                for (j = 0; j < td.length; j++) {
-                    if (td[j]) {
-                        txtValue = td[j].textContent || td[j].innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                            break;
-                        }
-                    }
-                }
-            }
+        function confirmApprove() {
+            return confirm("คุณแน่ใจหรือไม่ว่าต้องการอนุมัติการยืมอุปกรณ์นี้?");
         }
-        let ch = 0;
-        $(document).ready(function() {
-            $('.s_select').selectpicker();
-            $('#itemstb').dataTable();
-        });
     </script>
 </body>
 
