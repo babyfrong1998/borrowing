@@ -26,7 +26,7 @@ $u_id = $_SESSION['u_id'];
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Niramit:wght@200&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?<?php echo time() ?>">
+    <link rel="stylesheet" href="../style.css?<?php echo time() ?>">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.1.0/mdb.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
@@ -54,6 +54,12 @@ $u_id = $_SESSION['u_id'];
         display: none;
         margin-top: 20px;
     }
+
+    #addItemTypeForm,
+    #addItemForm {
+        display: none;
+        margin-top: 20px;
+    }
 </style>
 
 <body>
@@ -65,10 +71,60 @@ $u_id = $_SESSION['u_id'];
                     <a href="../index.php">
                         <button type="button" id="menu" class="btn btn-info col-12">ออกจากระบบ</button>
                     </a>
+                    <hr>
+                    <button type="button" class="btn btn-info col-12" onclick="window.location.href='manage_items.php'">จัดการประเภทและอุปกรณ์</button>
                 </div>
             </div>
             <div class="col-md-10">
-                <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
+                <button type="button" class="btn btn-success" onclick="toggleForm('addItemTypeForm')" style="margin-bottom: 2%;">เพิ่มประเภทอุปกรณ์</button>
+
+                <!-- ปุ่มสำหรับเปิดฟอร์มเพิ่มอุปกรณ์ -->
+                <button type="button" class="btn btn-success" onclick="toggleForm('addItemForm')" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
+                
+                <!-- ฟอร์มเพิ่มประเภทอุปกรณ์ -->
+                <div id="addItemTypeForm">
+                    <form action="add_item_type.php" method="POST">
+                        <div class="form-group">
+                            <label for="type_name">ชื่อประเภท</label>
+                            <input type="text" class="form-control" id="type_name" name="type_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="type_description">อธิบายอุปกรณ์</label>
+                            <textarea class="form-control" id="type_description" name="type_description" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">บันทึกประเภทอุปกรณ์</button>
+                    </form>
+                </div>
+
+                <!-- ฟอร์มเพิ่มอุปกรณ์ -->
+                <div id="addItemForm">
+                    <form action="add_item.php" method="POST">
+                        <div class="form-group">
+                            <label for="ag_type">ประเภท</label>
+                            <select class="form-control" id="ag_type" name="ag_type" required>
+                                <?php
+                                // ดึงข้อมูลประเภทอุปกรณ์จากฐานข้อมูล
+                                $sql = "SELECT * FROM item_type";
+                                $result = $conn->query($sql);
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value='" . $row['type_id'] . "'>" . $row['type_name'] . "</option>";
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ag_id">รหัสอุปกรณ์</label>
+                            <input type="text" class="form-control" id="ag_id" name="ag_id" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">บันทึกอุปกรณ์</button>
+                    </form>
+                </div>
+                <br>
+                <div class="col-md-10">
+                    
+                </div>
                 <br>
                 <div class="row">
                     <div class="col-md-4">
@@ -203,7 +259,7 @@ $u_id = $_SESSION['u_id'];
                                                         <button type='submit' class='btn btn-success'>อนุมัติการยืม</button>
                                                     </form>
                                                   </td>";
-                                        } else if ($row["ag_status"] == 'ST008' ) {
+                                        } else if ($row["ag_status"] == 'ST008') {
                                             echo "<td>
                                             <form method='POST' action='update_status.php' onsubmit='return confirmReturn()'>
                                                 <input type='hidden' name='ag_id' value='" . $row["ag_id"] . "'>
@@ -247,6 +303,15 @@ $u_id = $_SESSION['u_id'];
 
         function confirmApprove() {
             return confirm("คุณแน่ใจหรือไม่ว่าต้องการอนุมัติการยืมอุปกรณ์นี้?");
+        }
+
+        function toggleForm(formId) {
+            var form = document.getElementById(formId);
+            if (form.style.display === "none" || form.style.display === "") {
+                form.style.display = "block";
+            } else {
+                form.style.display = "none";
+            }
         }
     </script>
 </body>

@@ -106,12 +106,12 @@ $office_agency = $office_data['Agency'];
                             <br>
                             <input type="datetime-local" class="form-control w-100" id="returnDate" name="returnDate">
                         </div>
-                        <label id="headline">ข้อมูลครุภัณฑ์</label>
+                        <label id="headline">ข้อมูลอุปกรณ์</label>
                         <hr>
                         <div class="col-md-6">
-                            <label for="inputcategory" class="form-label">ประเภทครุภัณฑ์</label>
+                            <label for="inputcategory" class="form-label">ประเภทอุปกรณ์</label>
                             <select id="inputcategory" name="item_type" class="selectpicker s_select w-100" data-live-search="true" onchange="updateItemCodes(this.value)">
-                                <option value="">----</option>
+                                <option value="">--เลือกประเภทอุปกรณ์--</option>
                                 <?php
                                 $sql = "SELECT DISTINCT `type_name` as type ,`type_id` FROM item_type;";
                                 if ($result = mysqli_query($conn, $sql)) {
@@ -125,7 +125,7 @@ $office_agency = $office_data['Agency'];
                             </select>
                         </div>
                         <div class="col-md-6 mt-2">
-                            <label for="inputcode" class="form-label">รหัสครุภัณฑ์</label>
+                            <label for="inputcode" class="form-label">รหัสอุปกรณ์</label>
                             <select id="itemselect" name="itemselect" class="selectpicker s_select w-100" data-live-search="true">
                             </select>
                         </div>
@@ -134,6 +134,7 @@ $office_agency = $office_data['Agency'];
                     <input type="hidden" name="u_id" value="<?php echo $u_id; ?>">
                     <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid">
                 </form>
+                <hr>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card">
@@ -200,11 +201,11 @@ $office_agency = $office_data['Agency'];
                                 <?php
                                 // Filter records by u_id
                                 $sql = "SELECT b.b_id, b.b_name, b.b_date, b.b_return, b.b_status, sl.st_name, it.type_name 
-        FROM borrowing b 
-        JOIN items_1 i ON b.b_name = i.ag_id 
-        JOIN item_type it ON i.ag_type = it.type_id 
-        JOIN statuslist sl ON b.b_status = sl.st_id
-        WHERE b.b_borower = '$u_id'";
+                                        FROM borrowing b 
+                                        JOIN items_1 i ON b.b_name = i.ag_id 
+                                        JOIN item_type it ON i.ag_type = it.type_id 
+                                        JOIN statuslist sl ON b.b_status = sl.st_id
+                                        WHERE b.b_borower = '$u_id'";
 
 
                                 $result = $conn->query($sql);
@@ -220,7 +221,7 @@ $office_agency = $office_data['Agency'];
                                         echo "<td>" . $row["st_name"] . "</td>";
 
                                         if ($row["b_status"] == 'ST002' || $row["b_status"] == 'ST005') {
-                                            echo "<td><button class='return-button' onclick=\"returnItem('" . $row['b_id'] . "')\">คืน</button></td>";
+                                            echo "<td><button class='return-button' onclick=\"returnItem('" . $row['b_id'] . "')\">แจ้งคืน</button></td>";
                                         } else {
                                             echo "<td></td>"; // Empty cell if condition is not met
                                         }
