@@ -34,7 +34,7 @@ $u_id = $_SESSION['u_id'];
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
     <link rel="stylesheet" href="styles.css">
-    <title>ระบบของช่าง IT</title>
+    <title>ระบบแอดมิน</title>
 </head>
 <style>
     body {
@@ -49,21 +49,10 @@ $u_id = $_SESSION['u_id'];
         background-color: turquoise;
         font-weight: bold;
     }
-
-    #addItemForm {
-        display: none;
-        margin-top: 20px;
-    }
-
-    #addItemTypeForm,
-    #addItemForm {
-        display: none;
-        margin-top: 20px;
-    }
 </style>
 
 <body>
-    <h2 id="nav">ระบบของช่าง IT</h2>
+    <h2 id="nav">ระบบแอดมิน</h2>
     <div class="container">
         <div class="row">
             <div class="col-md-2">
@@ -72,57 +61,15 @@ $u_id = $_SESSION['u_id'];
                         <button type="button" id="menu" class="btn btn-info col-12">ออกจากระบบ</button>
                     </a>
                     <hr>
-                    <button type="button" class="btn btn-info col-12" onclick="window.location.href='manage_items.php'">จัดการประเภทและอุปกรณ์</button>
+                    <button type="button" class="btn btn-info col-12" onclick="window.location.href='manage_user.php'">จัดการชื่อผู้ใช้งาน</button>
+                    <hr>
+                    <button type="button" class="btn btn-info col-12" onclick="window.location.href='Statistical.php'">สถิติการใช้อุปกรณ์ IT</button>
                 </div>
             </div>
             <div class="col-md-10">
-                <button type="button" class="btn btn-success" onclick="toggleForm('addItemTypeForm')" style="margin-bottom: 2%;">เพิ่มประเภทอุปกรณ์</button>
 
-                <!-- ปุ่มสำหรับเปิดฟอร์มเพิ่มอุปกรณ์ -->
-                <button type="button" class="btn btn-success" onclick="toggleForm('addItemForm')" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
-
-                <!-- ฟอร์มเพิ่มประเภทอุปกรณ์ -->
-                <div id="addItemTypeForm">
-                    <form action="add_item_type.php" method="POST">
-                        <div class="form-group">
-                            <label for="type_name">ชื่อประเภท</label>
-                            <input type="text" class="form-control" id="type_name" name="type_name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="type_description">อธิบายอุปกรณ์</label>
-                            <textarea class="form-control" id="type_description" name="type_description" rows="3" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">บันทึกประเภทอุปกรณ์</button>
-                    </form>
-                </div>
-
-                <!-- ฟอร์มเพิ่มอุปกรณ์ -->
-                <div id="addItemForm">
-                    <form action="add_item.php" method="POST">
-                        <div class="form-group">
-                            <label for="ag_type">ประเภท</label>
-                            <select class="form-control" id="ag_type" name="ag_type" required>
-                                <?php
-                                // ดึงข้อมูลประเภทอุปกรณ์จากฐานข้อมูล
-                                $sql = "SELECT * FROM item_type";
-                                $result = $conn->query($sql);
-                                if ($result->num_rows > 0) {
-                                    while ($row = $result->fetch_assoc()) {
-                                        echo "<option value='" . $row['type_id'] . "'>" . $row['type_name'] . "</option>";
-                                    }
-                                }
-                                ?>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="ag_id">รหัสอุปกรณ์</label>
-                            <input type="text" class="form-control" id="ag_id" name="ag_id" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">บันทึกอุปกรณ์</button>
-                    </form>
-                </div>
                 <br>
-                <div class="col-md-12">
+                <div class="col-md-10">
                 </div>
                 <br>
                 <div class="row">
@@ -173,7 +120,7 @@ $u_id = $_SESSION['u_id'];
                                     <th>สถานะ</th>
                                     <th>คนยืม</th>
                                     <th>หน่วยงาน</th>
-                                    <th>Action</th>
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -185,13 +132,13 @@ $u_id = $_SESSION['u_id'];
                                  WHERE b.b_name = i.ag_id 
                                  AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005'OR i.ag_status = 'ST008' OR i.ag_status = 'ST007') LIMIT 1) AS borrower_name,
                                 (SELECT u.u_address 
-                                 FROM borrowing b 
-                                 JOIN users u ON b.b_borower = u.u_id 
-                                 WHERE b.b_name = i.ag_id 
-                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005' OR i.ag_status = 'ST008' OR i.ag_status = 'ST007') LIMIT 1) AS borrower_office 
-                                 FROM items_1 i 
-                         JOIN item_type it ON i.ag_type = it.type_id 
-                         JOIN statuslist sl ON i.ag_status = sl.st_id";
+                                FROM borrowing b 
+                                JOIN users u ON b.b_borower = u.u_id 
+                                WHERE b.b_name = i.ag_id 
+                                AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005' OR i.ag_status = 'ST008' OR i.ag_status = 'ST007') LIMIT 1) AS borrower_office 
+                                FROM items_1 i 
+                                JOIN item_type it ON i.ag_type = it.type_id 
+                                JOIN statuslist sl ON i.ag_status = sl.st_id";
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     $i = 1; // Initialize counter for numbering
@@ -203,27 +150,6 @@ $u_id = $_SESSION['u_id'];
                                         echo "<td>" . $row["st_name"] . "</td>";
                                         echo "<td>" . ($row["borrower_name"] ? $row["borrower_name"] : "") . "</td>";
                                         echo "<td>" . ($row["borrower_office"] ? $row["borrower_office"] : "") . "</td>";
-
-                                        // Display the "คืน" button if status is ST002 or ST005
-                                        if ($row["ag_status"] == 'ST007') {
-                                            echo "<td>
-                                                    <form method='POST' action='approve_status.php' onsubmit='return confirmApprove()'>
-                                                        <input type='hidden' name='ag_id' value='" . $row["ag_id"] . "'>
-                                                        <button type='submit' class='btn btn-success'>อนุมัติการยืม</button>
-                                                    </form>
-                                                  </td>";
-                                        } else if ($row["ag_status"] == 'ST008') {
-                                            echo "<td>
-                                            <form method='POST' action='update_status.php' onsubmit='return confirmReturn()'>
-                                                <input type='hidden' name='ag_id' value='" . $row["ag_id"] . "'>
-                                                <input type='hidden' name='u_id' value='<?php echo $u_id; ?>'>
-                                                <button type='submit' class='btn btn-primary'>ยืนยันการคืนอุปกรณ์</button>
-                                            </form>
-                                          </td>";
-                                        } else {
-                                            echo "<td></td>"; // No button displayed
-                                        }
-
                                         echo "</tr>";
                                         $i++; // Increment the counter
                                     }
@@ -250,22 +176,6 @@ $u_id = $_SESSION['u_id'];
             $('#itmes_1').DataTable();
         });
 
-        function confirmReturn() {
-            return confirm("คุณแน่ใจหรือไม่ว่าต้องการคืนอุปกรณ์นี้?");
-        }
-
-        function confirmApprove() {
-            return confirm("คุณแน่ใจหรือไม่ว่าต้องการอนุมัติการยืมอุปกรณ์นี้?");
-        }
-
-        function toggleForm(formId) {
-            var form = document.getElementById(formId);
-            if (form.style.display === "none" || form.style.display === "") {
-                form.style.display = "block";
-            } else {
-                form.style.display = "none";
-            }
-        }
     </script>
 </body>
 

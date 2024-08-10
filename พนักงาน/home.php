@@ -40,7 +40,7 @@ $office_agency = $office_data['Agency'];
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css" />
     <link rel="stylesheet" href="styles.css">
-    <title>ระบบยืมคืนครุภัณฑ์ IT</title>
+    <title>ระบบยืมคืนอุปกรณ์ IT</title>
 </head>
 <style>
     body {
@@ -136,54 +136,43 @@ $office_agency = $office_data['Agency'];
                 </form>
                 <hr>
                 <div class="row">
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <?php
-                                $sql = "SELECT COUNT(*) as 'NB' FROM `items_1` WHERE `ag_type`='T001'AND `ag_status`='ST001'";
-                                $result = $conn->query($sql);
-                                while ($row = $result->fetch_assoc()) {
-                                    $NB = $row['NB'];
-                                }
-                                ?>
-                                <h5 class="card-title">คอมพิวเตอร์</h5>
-                                <p class="card-text">จำนวนคงเหลือ <?php echo $NB
-                                                                    ?></p>
+                <?php
+                    $sql = "SELECT * FROM item_type";
+                    if ($res = mysqli_query($conn, $sql)) {
+                        while ($row = mysqli_fetch_array($res)) {
+                            $type_id = $row['type_id'];
+                            $type_name = $row['type_name'];
+
+                            $sql1 = "SELECT COUNT(*) as 'remaining' FROM `items_1` WHERE `ag_type`='$type_id' AND `ag_status`='ST001'";
+                            $result1 = $conn->query($sql1);
+                            $remaining = 0; // Initialize variable
+                            if ($result1->num_rows > 0) {
+                                $row1 = $result1->fetch_assoc();
+                                $remaining = $row1['remaining'];
+                            }
+                            $sql2 = "SELECT COUNT(*) as 'borrowed' FROM `items_1` WHERE `ag_type`= '$type_id' AND (`ag_status`='ST002' OR `ag_status`='ST005')";
+                            $result2 = $conn->query($sql2);
+                            $borrowed = 0; // Initialize variable
+                            if ($result2->num_rows > 0) {
+                                $row2 = $result2->fetch_assoc();
+                                $borrowed = $row2['borrowed'];
+                            }
+                            $total = $remaining + $borrowed;
+                    ?>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?php echo htmlspecialchars($type_name); ?></h5>
+                                        <p class="card-text">จำนวนคงเหลือ <?php echo $remaining; ?></p>
+                                        <p class="card-text">จำนวนที่ถูกยืม <?php echo $borrowed; ?></p>
+                                        <p class="card-text">จำนวนทั้งหมด <?php echo ($total); ?></p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <?php
-                                $sql = "SELECT COUNT(*) as 'ph' FROM `items_1` WHERE `ag_type`='T002'AND `ag_status`='ST001'";
-                                $result = $conn->query($sql);
-                                while ($row = $result->fetch_assoc()) {
-                                    $ph = $row['ph'];
-                                }
-                                ?>
-                                <h5 class="card-title">หน้าจอ</h5>
-                                <p class="card-text">จำนวนคงเหลือ <?php echo $ph
-                                                                    ?></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <?php
-                                $sql = "SELECT COUNT(*) as 'sc' FROM `items_1` WHERE `ag_type`='T003'AND `ag_status`='ST001'";
-                                $result = $conn->query($sql);
-                                while ($row = $result->fetch_assoc()) {
-                                    $sc = $row['sc'];
-                                }
-                                ?>
-                                <h5 class="card-title">โทรศัพท์</h5>
-                                <p class="card-text">จำนวนคงเหลือ <?php echo $sc
-                                                                    ?></p>
-                            </div>
-                        </div>
-                    </div>
+                    <?php
+                        }
+                    }
+                    ?>
                     <div class="col-md-12">
                         <table id="borrow_table" class="table display" style="width:100%;margin-top :20px;">
                             <thead>
