@@ -34,6 +34,7 @@ if(isset($_POST['username']) && isset($_POST['password'])){
                 header("Location: ช่างIT/home_it.php");
                 exit();
             } elseif($u_status_id == 3){
+                
                 header("Location: แอดมิน/home_admin.php");
                 exit();
             } else {
