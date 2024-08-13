@@ -15,10 +15,26 @@ $b_agency = $_POST['office'];
 $return_date = isset($_POST['returnDate']) ? $_POST['returnDate'] : '';
 
 // กำหนดค่า b_status และ b_return ตามการกำหนด returnDate
-$b_status = 'ST007';
+$b_status = 'ST007'; // กำหนดสถานะ "จอง"
 $b_return = $return_date ? $return_date : NULL; // ใช้ NULL แทน 0
 
-// เริ่มสร้าง b_id จากเลข 1
+// ตรวจสอบว่าอุปกรณ์นี้ถูกจองอยู่แล้วหรือไม่
+$sql_check_reservation = "SELECT * FROM borrowing WHERE b_name = ? AND b_status = 'ST007'";
+$stmt_check_reservation = $conn->prepare($sql_check_reservation);
+$stmt_check_reservation->bind_param("s", $b_name);
+$stmt_check_reservation->execute();
+$result_check_reservation = $stmt_check_reservation->get_result();
+
+if ($result_check_reservation->num_rows > 0) {
+    // หากมีการจองอยู่แล้ว แจ้งเตือนผู้ใช้และหยุดกระบวนการ
+    echo "Error: This item is already reserved.";
+    $stmt_check_reservation->close();
+    $conn->close();
+    exit();
+}
+$stmt_check_reservation->close();
+
+// สร้าง b_id จากเลข 1
 $new_b_id = 1;
 
 // ตรวจสอบว่า b_id นี้มีอยู่แล้วหรือไม่ ถ้ามีจะเพิ่มค่าทีละ 1
@@ -35,15 +51,6 @@ while (true) {
     }
     $new_b_id++; // เพิ่มค่า b_id ทีละ 1
 }
-
-// ตรวจสอบค่าก่อนแทรก
-echo "b_id: $new_b_id<br>";
-echo "b_name: $b_name<br>";
-echo "b_date: $b_date<br>";
-echo "b_borrower: $b_borower<br>";
-echo "b_agency: $b_agency<br>";
-echo "b_status: $b_status<br>";
-echo "return_date: $return_date<br>";
 
 // สร้าง SQL query เพื่อแทรกข้อมูลลงในตาราง borrowing โดยระบุ b_id
 $sql = "INSERT INTO borrowing (b_id, b_name, b_date, b_borower, b_return_p, b_agency, b_status, b_return) VALUES (?, ?, ?, ?, '', ?, ?, ?)";
