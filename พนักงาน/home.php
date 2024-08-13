@@ -99,8 +99,9 @@ $office_agency = $office_data['Agency'];
                         <div class="col-md-4">
                             <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
                             <br>
-                            <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate">
+                            <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate" min="<?php echo date('Y-m-d\TH:i'); ?>">
                         </div>
+
                         <div class="col-md-4">
                             <label for="returnDate" class="form-label" style="margin-top: 1%;">กำหนดวันคืน</label>
                             <br>
@@ -136,7 +137,7 @@ $office_agency = $office_data['Agency'];
                 </form>
                 <hr>
                 <div class="row">
-                <?php
+                    <?php
                     $sql = "SELECT * FROM item_type";
                     if ($res = mysqli_query($conn, $sql)) {
                         while ($row = mysqli_fetch_array($res)) {
@@ -240,6 +241,9 @@ $office_agency = $office_data['Agency'];
     <script>
         $(document).ready(function() {
             $('#borrow_table').DataTable();
+            // กำหนดวันที่ปัจจุบันให้กับ input ที่มี id 'bordate'
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('bordate').setAttribute('min', today);
         });
 
         function addborrow() {
@@ -318,25 +322,35 @@ $office_agency = $office_data['Agency'];
             }
         });
 
-        function returnItem(borrowId) {
-            console.log('Borrow ID: ', borrowId);
-            if (confirm('คุณต้องการคืนอุปกรณ์นี้หรือไม่?')) {
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', 'returnItem.php', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onload = function() {
-                    console.log('Response status: ', this.status);
-                    console.log('Response text: ', this.responseText);
-                    if (this.status === 200) {
-                        alert('การคืนสำเร็จ');
-                        location.reload();
-                    } else {
-                        alert('การคืนล้มเหลว: ' + this.responseText);
-                    }
-                };
-                xhr.send('borrowId=' + borrowId);
+        document.getElementById('formdata').addEventListener('submit', function(event) {
+            var bordate = document.getElementById('bordate').value;
+            var returnDate = document.getElementById('returnDate').value;
+            var itemselect = document.getElementById('itemselect').value;
+
+            // ตรวจสอบไม่ให้ returnDate น้อยกว่า bordate
+            if (new Date(returnDate) < new Date(bordate)) {
+                alert('วันกำหนดคืนต้องไม่ต่ำกว่าวันที่ยืม');
+                event.preventDefault(); // หยุดการส่งฟอร์ม
+                return false;
             }
-        }
+
+            // ตรวจสอบว่ามีการเลือกอุปกรณ์
+            if (itemselect === '') {
+                alert('กรุณาเลือกรหัสครุภัณฑ์');
+                event.preventDefault();
+                return false;
+            }
+        });
+
+        $(document).ready(function() {
+                    var today = new Date().toISOString().slice(0, 16);
+                    document.getElementById("bordate").min = today;
+                    document.getElementById("returnDate").min = today;
+                    $('#bordate').on('change', function() {
+                        var selectedBorrowDate = new Date(this.value).toISOString().slice(0, 16);
+                        document.getElementById("returnDate").min = selectedBorrowDate;
+                    });
+                });
     </script>
 </body>
 
