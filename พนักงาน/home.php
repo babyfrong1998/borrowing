@@ -57,15 +57,44 @@ $office_agency = $office_data['Agency'];
     }
 
     .return-button {
-        background-color: orange;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        cursor: pointer;
+        background-color: #FF5900;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
     }
 
-    .return-button:hover {
-        background-color: darkorange;
+    .extend-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+
+    #extend-form-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 20px;
+        background-color: white;
+        border: 1px solid #ccc;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
     }
 </style>
 
@@ -136,6 +165,18 @@ $office_agency = $office_data['Agency'];
                     <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid">
                 </form>
                 <hr>
+                <!-- HTML Form for Selecting Return Date -->
+                <!-- HTML Form for Selecting Return Date -->
+                <div id="extend-form-container" style="display: none;">
+                    <form id="extend-form">
+                        <label for="return-date">เลือกวันที่คืน:</label>
+                        <input type="date" id="return-date" name="return-date" required>
+                        <button type="button" onclick="submitReturnDate()">ยืนยัน</button>
+                        <button type="button" onclick="cancelForm()">ยกเลิก</button>
+                    </form>
+                </div>
+
+
                 <div class="row">
                     <?php
                     $sql = "SELECT * FROM item_type";
@@ -174,6 +215,7 @@ $office_agency = $office_data['Agency'];
                         }
                     }
                     ?>
+
                     <div class="col-md-12">
                         <table id="borrow_table" class="table display" style="width:100%;margin-top :20px;">
                             <thead>
@@ -191,13 +233,19 @@ $office_agency = $office_data['Agency'];
                                 <?php
                                 // Filter records by u_id
                                 $sql = "SELECT b.b_id, b.b_name, b.b_date, b.b_return, b.b_status, sl.st_name, it.type_name 
-                                        FROM borrowing b 
-                                        JOIN items_1 i ON b.b_name = i.ag_id 
-                                        JOIN item_type it ON i.ag_type = it.type_id 
-                                        JOIN statuslist sl ON b.b_status = sl.st_id
-                                        WHERE b.b_borower = '$u_id'";
-
-
+                                FROM borrowing b 
+                                JOIN items_1 i ON b.b_name = i.ag_id 
+                                JOIN item_type it ON i.ag_type = it.type_id 
+                                JOIN statuslist sl ON b.b_status = sl.st_id
+                                WHERE b.b_borower = '$u_id'
+                                ORDER BY 
+                                CASE 
+                                WHEN b.b_status = 'ST002' THEN 1
+                                WHEN b.b_status = 'ST005' THEN 2
+                                WHEN b.b_status = 'ST008' THEN 3
+                                WHEN b.b_status = 'ST007' THEN 4
+                                ELSE 5
+                                END, b.b_status";
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     $i = 1; // Initialize counter for numbering
@@ -209,20 +257,22 @@ $office_agency = $office_data['Agency'];
                                         echo "<td>" . $row["b_date"] . "</td>";
                                         echo "<td>" . $row["b_return"] . "</td>";
                                         echo "<td>" . $row["st_name"] . "</td>";
-
+                                        // Initialize empty cell content
+                                        $actionCellContent = "";
+                                        // Check conditions to set action buttons
                                         if ($row["b_status"] == 'ST002' || $row["b_status"] == 'ST005') {
-                                            echo "<td><button class='return-button' onclick=\"returnItem('" . $row['b_id'] . "')\">แจ้งคืน</button></td>";
-                                        } else {
-                                            echo "<td></td>"; // Empty cell if condition is not met
+                                            $actionCellContent = "<button class='return-button' onclick=\"returnItem('" . $row['b_id'] . "')\">แจ้งคืน</button>";
                                         }
-
+                                        if ($row["b_status"] == 'ST005') {
+                                            $actionCellContent .= "<button class='extend-button' onclick=\"extendBorrowing('" . $row['b_id'] . "')\">ยืมต่อ</button>";
+                                        }
+                                        echo "<td>" . $actionCellContent . "</td>"; // Output the action cell content
                                         echo "</tr>";
                                         $i++; // Increment the counter
                                     }
                                 } else {
                                     echo "<tr><td colspan='7'>No data found</td></tr>";
                                 }
-
                                 $conn->close();
                                 ?>
                             </tbody>
@@ -343,15 +393,76 @@ $office_agency = $office_data['Agency'];
         });
 
         $(document).ready(function() {
-                    var today = new Date().toISOString().slice(0, 16);
-                    document.getElementById("bordate").min = today;
-                    document.getElementById("returnDate").min = today;
-                    $('#bordate').on('change', function() {
-                        var selectedBorrowDate = new Date(this.value).toISOString().slice(0, 16);
-                        document.getElementById("returnDate").min = selectedBorrowDate;
-                    });
-                });
+            var today = new Date().toISOString().slice(0, 16);
+            document.getElementById("bordate").min = today;
+            document.getElementById("returnDate").min = today;
+            $('#bordate').on('change', function() {
+                var selectedBorrowDate = new Date(this.value).toISOString().slice(0, 16);
+                document.getElementById("returnDate").min = selectedBorrowDate;
+            });
+        });
+
+        function extendBorrow(borrowId) {
+            document.getElementById('borrowId').value = borrowId;
+            $('#extendBorrowingModal').modal('show');
+        }
+
+        function extendBorrowing(borrowId, borrowDate) {
+            // แสดงฟอร์มให้ผู้ใช้เลือกวันที่คืน
+            var formContainer = document.getElementById('extend-form-container');
+            formContainer.style.display = 'block';
+
+            // เก็บ borrowId และ borrowDate ไว้ใน form เพื่อส่งไปด้วย
+            var form = document.getElementById('extend-form');
+            form.dataset.borrowId = borrowId;
+            form.dataset.borrowDate = borrowDate;
+
+            // ตั้งค่าขอบเขตวันที่ให้เลือกได้
+            var returnDateInput = document.getElementById('return-date');
+            var today = new Date();
+            var minDate = today.toISOString().split('T')[0]; // วันต้องไม่ต่ำกว่าวันนี้
+
+            // วันที่ยืมจะต้องเป็นวันที่ขั้นต่ำ
+            var minReturnDate = new Date(borrowDate);
+            minReturnDate.setDate(minReturnDate.getDate() + 1); // ต้องมากกว่าหนึ่งวันจากวันที่ยืม
+            minReturnDate = minReturnDate.toISOString().split('T')[0];
+
+            // เลือกวันที่ที่มากกว่าทั้งสองวัน
+            var finalMinDate = (minDate > minReturnDate) ? minDate : minReturnDate;
+            returnDateInput.setAttribute('min', finalMinDate);
+        }
+
+        function submitReturnDate() {
+            var form = document.getElementById('extend-form');
+            var borrowId = form.dataset.borrowId;
+            var returnDate = document.getElementById('return-date').value;
+
+            if (returnDate) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'update_return_date.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        alert(xhr.responseText);
+                        location.reload(); // รีเฟรชหน้าเพื่อแสดงข้อมูลที่อัพเดต
+                    } else {
+                        alert('เกิดข้อผิดพลาดในการอัพเดตข้อมูล');
+                    }
+                };
+
+                xhr.send('b_id=' + encodeURIComponent(borrowId) + '&return_date=' + encodeURIComponent(returnDate));
+            } else {
+                alert('กรุณาเลือกวันที่คืน');
+            }
+        }
+
+        function cancelForm() {
+            var formContainer = document.getElementById('extend-form-container');
+            formContainer.style.display = 'none';
+        }
     </script>
+
 </body>
 
 </html>
