@@ -114,6 +114,7 @@ $office_agency = $office_data['Agency'];
                 <br>
                 <form action="getSql.php" method="POST" class="row g-3" id="formdata" style="display: none">
                     <div class="row">
+                    <hr>
                         <label id="headline">ข้อมูลผู้ยืม</label>
                         <hr>
                         <div class="col-md-4">
@@ -162,10 +163,10 @@ $office_agency = $office_data['Agency'];
                         <div class="col-md-6"></div>
                     </div>
                     <input type="hidden" name="u_id" value="<?php echo $u_id; ?>">
-                    <input type="submit" class="btn btn-light" name="submit" value="บันทึกการยืม" id="submid">
+                    <hr>
+                    <input type="submit" class="extend-button" name="submit" value="บันทึกการยืม" id="submid">
                 </form>
                 <hr>
-                <!-- HTML Form for Selecting Return Date -->
                 <!-- HTML Form for Selecting Return Date -->
                 <div id="extend-form-container" style="display: none;">
                     <form id="extend-form">
