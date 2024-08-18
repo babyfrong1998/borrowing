@@ -200,7 +200,7 @@ $office_agency = $office_data['Agency'];
                                 $row2 = $result2->fetch_assoc();
                                 $borrowed = $row2['borrowed'];
                             }
-                            $total = $remaining + $borrowed;
+                            
                     ?>
                             <div class="col-md-4">
                                 <div class="card">
@@ -208,7 +208,7 @@ $office_agency = $office_data['Agency'];
                                         <h5 class="card-title"><?php echo htmlspecialchars($type_name); ?></h5>
                                         <p class="card-text">จำนวนคงเหลือ <?php echo $remaining; ?></p>
                                         <p class="card-text">จำนวนที่ถูกยืม <?php echo $borrowed; ?></p>
-                                        <p class="card-text">จำนวนทั้งหมด <?php echo ($total); ?></p>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -462,6 +462,7 @@ $office_agency = $office_data['Agency'];
             var formContainer = document.getElementById('extend-form-container');
             formContainer.style.display = 'none';
         }
+        
     </script>
 
 </body>

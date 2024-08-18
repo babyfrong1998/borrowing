@@ -77,10 +77,8 @@ $u_id = $_SESSION['u_id'];
             </div>
             <div class="col-md-10">
                 <button type="button" class="btn btn-success" onclick="toggleForm('addItemTypeForm')" style="margin-bottom: 2%;">เพิ่มประเภทอุปกรณ์</button>
-
                 <!-- ปุ่มสำหรับเปิดฟอร์มเพิ่มอุปกรณ์ -->
                 <button type="button" class="btn btn-success" onclick="toggleForm('addItemForm')" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
-
                 <!-- ฟอร์มเพิ่มประเภทอุปกรณ์ -->
                 <div id="addItemTypeForm">
                     <form action="add_item_type.php" method="POST">
@@ -95,7 +93,6 @@ $u_id = $_SESSION['u_id'];
                         <button type="submit" class="btn btn-primary">บันทึกประเภทอุปกรณ์</button>
                     </form>
                 </div>
-
                 <!-- ฟอร์มเพิ่มอุปกรณ์ -->
                 <div id="addItemForm">
                     <form action="add_item.php" method="POST">
@@ -132,7 +129,6 @@ $u_id = $_SESSION['u_id'];
                         while ($row = mysqli_fetch_array($res)) {
                             $type_id = $row['type_id'];
                             $type_name = $row['type_name'];
-
                             $sql1 = "SELECT COUNT(*) as 'remaining' FROM `items_1` WHERE `ag_type`='$type_id' AND `ag_status`='ST001'";
                             $result1 = $conn->query($sql1);
                             $remaining = 0; // Initialize variable
@@ -203,7 +199,6 @@ $u_id = $_SESSION['u_id'];
                                         echo "<td>" . $row["st_name"] . "</td>";
                                         echo "<td>" . ($row["borrower_name"] ? $row["borrower_name"] : "") . "</td>";
                                         echo "<td>" . ($row["borrower_office"] ? $row["borrower_office"] : "") . "</td>";
-
                                         // Display the "คืน" button if status is ST002 or ST005
                                         if ($row["ag_status"] == 'ST007') {
                                             echo "<td>
