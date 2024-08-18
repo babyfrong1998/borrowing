@@ -58,31 +58,31 @@ $office_agency = $office_data['Agency'];
 
     .return-button {
         background-color: #FF5900;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 4px;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
     }
 
     .extend-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 4px;
-}
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
 
 
     #extend-form-container {
@@ -114,7 +114,7 @@ $office_agency = $office_data['Agency'];
                 <br>
                 <form action="getSql.php" method="POST" class="row g-3" id="formdata" style="display: none">
                     <div class="row">
-                    <hr>
+                        <hr>
                         <label id="headline">ข้อมูลผู้ยืม</label>
                         <hr>
                         <div class="col-md-4">
@@ -126,17 +126,7 @@ $office_agency = $office_data['Agency'];
                             <input type="text" class="form-control" name="office" id="inputtel" value="<?php echo $office_number . ' ' . $office_agency; ?>" readonly>
                             <input type="hidden" name="office" value="<?php echo $office_number; ?>">
                         </div>
-                        <div class="col-md-4">
-                            <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
-                            <br>
-                            <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate" min="<?php echo date('Y-m-d\TH:i'); ?>">
-                        </div>
-
-                        <div class="col-md-4">
-                            <label for="returnDate" class="form-label" style="margin-top: 1%;">กำหนดวันคืน</label>
-                            <br>
-                            <input type="datetime-local" class="form-control w-100" id="returnDate" name="returnDate">
-                        </div>
+                        <hr>
                         <label id="headline">ข้อมูลอุปกรณ์</label>
                         <hr>
                         <div class="col-md-6">
@@ -156,9 +146,18 @@ $office_agency = $office_data['Agency'];
                             </select>
                         </div>
                         <div class="col-md-6 mt-2">
-                            <label for="inputcode" class="form-label">รหัสอุปกรณ์</label>
-                            <select id="itemselect" name="itemselect" class="selectpicker s_select w-100" data-live-search="true">
-                            </select>
+                            <label for="inputQuantity" class="form-label">จำนวนเครื่อง</label>
+                            <input type="number" id="inputQuantity" name="item_quantity" class="form-control" min="1" placeholder="ระบุจำนวนที่ต้องการยืม" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
+                            <br>
+                            <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate" min="<?php echo date('Y-m-d\TH:i'); ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="returnDate" class="form-label" style="margin-top: 1%;">กำหนดวันคืน</label>
+                            <br>
+                            <input type="datetime-local" class="form-control w-100" id="returnDate" name="returnDate">
                         </div>
                         <div class="col-md-6"></div>
                     </div>
@@ -200,7 +199,7 @@ $office_agency = $office_data['Agency'];
                                 $row2 = $result2->fetch_assoc();
                                 $borrowed = $row2['borrowed'];
                             }
-                            
+
                     ?>
                             <div class="col-md-4">
                                 <div class="card">
@@ -208,7 +207,7 @@ $office_agency = $office_data['Agency'];
                                         <h5 class="card-title"><?php echo htmlspecialchars($type_name); ?></h5>
                                         <p class="card-text">จำนวนคงเหลือ <?php echo $remaining; ?></p>
                                         <p class="card-text">จำนวนที่ถูกยืม <?php echo $borrowed; ?></p>
-                                        
+
                                     </div>
                                 </div>
                             </div>
@@ -462,7 +461,6 @@ $office_agency = $office_data['Agency'];
             var formContainer = document.getElementById('extend-form-container');
             formContainer.style.display = 'none';
         }
-        
     </script>
 
 </body>
