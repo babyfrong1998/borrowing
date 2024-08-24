@@ -164,66 +164,39 @@ $u_id = $_SESSION['u_id'];
                             <thead>
                                 <tr>
                                     <th>ลำดับ</th>
-                                    <th>ชื่อประเภท</th>
-                                    <th>รหัสอุปกรณ์</th>
-                                    <th>สถานะ</th>
-                                    <th>คนยืม</th>
+                                    <th>ชื่อผู้ยืม</th>
                                     <th>หน่วยงาน</th>
-                                    <th>Action</th>
+                                    <th>ประเภทที่ยืม</th>
+                                    <th>จำนวนที่ทำการยืม</th>
+                                    <th>วันที่ยืม</th>
+                                    <th>กำหนดวันคืน</th>
+                                    <th>สถานะ</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
-                                $sql = "SELECT i.ag_id, it.type_name, i.ag_status,sl.st_name,  
-                                (SELECT CONCAT(u.u_fname, ' ', u.u_lname) 
-                                 FROM borrowing b 
-                                 JOIN users u ON b.b_borower = u.u_id 
-                                 WHERE b.b_name = i.ag_id 
-                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005'OR i.ag_status = 'ST008' OR i.ag_status = 'ST007') LIMIT 1) AS borrower_name,
-                                (SELECT u.u_address 
-                                 FROM borrowing b 
-                                 JOIN users u ON b.b_borower = u.u_id 
-                                 WHERE b.b_name = i.ag_id 
-                                 AND (i.ag_status = 'ST002' OR i.ag_status = 'ST005' OR i.ag_status = 'ST008' OR i.ag_status = 'ST007') LIMIT 1) AS borrower_office 
-                                 FROM items_1 i 
-                         JOIN item_type it ON i.ag_type = it.type_id 
-                         JOIN statuslist sl ON i.ag_status = sl.st_id";
+                                $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id 
+                                FROM borroww b 
+                                JOIN users u ON b.u_id = u.u_id";
+                                $row_number = 1;
+                                $result = mysqli_query($conn, $sql);
                                 $result = $conn->query($sql);
-                                if ($result->num_rows > 0) {
-                                    $i = 1; // Initialize counter for numbering
-                                    while ($row = $result->fetch_assoc()) {
+                                if (mysqli_num_rows($result) > 0) {
+                                    while ($row = mysqli_fetch_assoc($result)) {
                                         echo "<tr>";
-                                        echo "<td>" . $i . "</td>"; // Display the sequence number
-                                        echo "<td>" . $row["type_name"] . "</td>";
-                                        echo "<td>" . $row["ag_id"] . "</td>";
-                                        echo "<td>" . $row["st_name"] . "</td>";
-                                        echo "<td>" . ($row["borrower_name"] ? $row["borrower_name"] : "") . "</td>";
-                                        echo "<td>" . ($row["borrower_office"] ? $row["borrower_office"] : "") . "</td>";
-                                        // Display the "คืน" button if status is ST002 or ST005
-                                        if ($row["ag_status"] == 'ST007') {
-                                            echo "<td>
-                                                    <form method='POST' action='approve_status.php' onsubmit='return confirmApprove()'>
-                                                        <input type='hidden' name='ag_id' value='" . $row["ag_id"] . "'>
-                                                        <button type='submit' class='btn btn-success'>อนุมัติการยืม</button>
-                                                    </form>
-                                                  </td>";
-                                        } else if ($row["ag_status"] == 'ST008') {
-                                            echo "<td>
-                                            <form method='POST' action='update_status.php' onsubmit='return confirmReturn()'>
-                                                <input type='hidden' name='ag_id' value='" . $row["ag_id"] . "'>
-                                                <input type='hidden' name='u_id' value='<?php echo $u_id; ?>'>
-                                                <button type='submit' class='btn btn-primary'>ยืนยันการคืนอุปกรณ์</button>
-                                            </form>
-                                          </td>";
-                                        } else {
-                                            echo "<td></td>"; // No button displayed
-                                        }
-
+                                        echo "<td>" .  $row_number  . "</td>";
+                                        echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>"; // รวมชื่อและนามสกุล
+                                        echo "<td>" . $row['number'] . "</td>";
+                                        echo "<td>" . $row['type_id'] . "</td>";
+                                        echo "<td>" . $row['Brunum'] . "</td>";
+                                        echo "<td>" . $row['BrudateB'] . "</td>";
+                                        echo "<td>" . $row['BrudateRe'] . "</td>";
+                                        echo "<td>" . $row['st_id'] . "</td>";
                                         echo "</tr>";
-                                        $i++; // Increment the counter
+                                        $row_number++;
                                     }
                                 } else {
-                                    echo "<tr><td colspan='7'>No data found</td></tr>";
+                                    echo "<tr><td colspan='8'>No records found</td></tr>";
                                 }
                                 $conn->close();
                                 ?>
