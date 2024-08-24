@@ -96,6 +96,15 @@ $office_agency = $office_data['Agency'];
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         z-index: 1000;
     }
+
+    .alert-success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        padding: 10px;
+        margin-top: 20px;
+        border-radius: 5px;
+    }
 </style>
 
 <body>
@@ -129,25 +138,33 @@ $office_agency = $office_data['Agency'];
                         <hr>
                         <label id="headline">ข้อมูลอุปกรณ์</label>
                         <hr>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="inputcategory" class="form-label">ประเภทอุปกรณ์</label>
-                            <select id="inputcategory" name="item_type" class="selectpicker s_select w-100" data-live-search="true" onchange="updateItemCodes(this.value)">
+                            <select id="inputcategory" name="item_type" class="selectpicker s_select w-100" data-live-search="true">
                                 <option value="">--เลือกประเภทอุปกรณ์--</option>
                                 <?php
-                                $sql = "SELECT DISTINCT `type_name` as type ,`type_id` FROM item_type;";
+                                $sql = "SELECT DISTINCT `type_name`, `type_id` FROM item_type;";
                                 if ($result = mysqli_query($conn, $sql)) {
                                     while ($r = mysqli_fetch_assoc($result)) {
                                 ?>
-                                        <option value="<?php echo $r['type_id'] ?>"><?php echo $r['type'] ?></option>
+                                        <option value="<?php echo $r['type_id'] ?>"><?php echo $r['type_name'] ?></option>
                                 <?php
                                     }
                                 }
                                 ?>
                             </select>
                         </div>
-                        <div class="col-md-6 mt-2">
+                        <div class="col-md-3">
                             <label for="inputQuantity" class="form-label">จำนวนเครื่อง</label>
-                            <input type="number" id="inputQuantity" name="item_quantity" class="form-control" min="1" placeholder="ระบุจำนวนที่ต้องการยืม" required>
+                            <select id="inputQuantity" name="item_quantity" class="form-control" required>
+                                <option value="">--เลือกจำนวนเครื่อง--</option>
+                                <!-- Option จะถูกเติมโดย JavaScript -->
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="comment">หมายเหตุ</label>
+                            <input type="text" class="form-control w-100" id="comment" name="comment" maxlength="50" placeholder="ระบุข้อมูลการยืมเพิ่มเติม">
                         </div>
                         <div class="col-md-4">
                             <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
@@ -159,13 +176,22 @@ $office_agency = $office_data['Agency'];
                             <br>
                             <input type="datetime-local" class="form-control w-100" id="returnDate" name="returnDate">
                         </div>
+
                         <div class="col-md-6"></div>
+                        <input type="hidden" name="st_id" value="ST007">
                     </div>
                     <input type="hidden" name="u_id" value="<?php echo $u_id; ?>">
                     <hr>
                     <input type="submit" class="extend-button" name="submit" value="บันทึกการยืม" id="submid">
                 </form>
                 <hr>
+                <?php
+                // ส่วนนี้อยู่ในตำแหน่งที่คุณต้องการให้แสดงกล่องข้อความ
+                if (isset($_GET['success']) && $_GET['success'] == 1) {
+                    echo  '<div id="alertBox" class="alert alert-success" role="alert">การยืมสำเร็จ!</div>';
+                }
+                ?>
+
                 <!-- HTML Form for Selecting Return Date -->
                 <div id="extend-form-container" style="display: none;">
                     <form id="extend-form">
@@ -175,8 +201,6 @@ $office_agency = $office_data['Agency'];
                         <button type="button" onclick="cancelForm()">ยกเลิก</button>
                     </form>
                 </div>
-
-
                 <div class="row">
                     <?php
                     $sql = "SELECT * FROM item_type";
@@ -184,7 +208,6 @@ $office_agency = $office_data['Agency'];
                         while ($row = mysqli_fetch_array($res)) {
                             $type_id = $row['type_id'];
                             $type_name = $row['type_name'];
-
                             $sql1 = "SELECT COUNT(*) as 'remaining' FROM `items_1` WHERE `ag_type`='$type_id' AND `ag_status`='ST001'";
                             $result1 = $conn->query($sql1);
                             $remaining = 0; // Initialize variable
@@ -199,7 +222,6 @@ $office_agency = $office_data['Agency'];
                                 $row2 = $result2->fetch_assoc();
                                 $borrowed = $row2['borrowed'];
                             }
-
                     ?>
                             <div class="col-md-4">
                                 <div class="card">
@@ -215,7 +237,6 @@ $office_agency = $office_data['Agency'];
                         }
                     }
                     ?>
-
                     <div class="col-md-12">
                         <table id="borrow_table" class="table display" style="width:100%;margin-top :20px;">
                             <thead>
@@ -288,6 +309,7 @@ $office_agency = $office_data['Agency'];
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#borrow_table').DataTable();
@@ -360,30 +382,25 @@ $office_agency = $office_data['Agency'];
             };
             xhr.send();
         }
-
         document.getElementById('formdata').addEventListener('submit', function(event) {
             var bordate = document.getElementById('bordate').value;
             var itemselect = document.getElementById('itemselect').value;
-
             // ตรวจสอบข้อมูลในช่อง 'วันที่ยืม' และ 'รหัสครุภัณฑ์'
             if (!bordate || !itemselect) {
                 alert('กรุณากรอกข้อมูลให้ครบถ้วน');
                 event.preventDefault(); // ป้องกันการส่งฟอร์ม
             }
         });
-
         document.getElementById('formdata').addEventListener('submit', function(event) {
             var bordate = document.getElementById('bordate').value;
             var returnDate = document.getElementById('returnDate').value;
             var itemselect = document.getElementById('itemselect').value;
-
             // ตรวจสอบไม่ให้ returnDate น้อยกว่า bordate
             if (new Date(returnDate) < new Date(bordate)) {
                 alert('วันกำหนดคืนต้องไม่ต่ำกว่าวันที่ยืม');
                 event.preventDefault(); // หยุดการส่งฟอร์ม
                 return false;
             }
-
             // ตรวจสอบว่ามีการเลือกอุปกรณ์
             if (itemselect === '') {
                 alert('กรุณาเลือกรหัสครุภัณฑ์');
@@ -391,7 +408,6 @@ $office_agency = $office_data['Agency'];
                 return false;
             }
         });
-
         $(document).ready(function() {
             var today = new Date().toISOString().slice(0, 16);
             document.getElementById("bordate").min = today;
@@ -411,22 +427,18 @@ $office_agency = $office_data['Agency'];
             // แสดงฟอร์มให้ผู้ใช้เลือกวันที่คืน
             var formContainer = document.getElementById('extend-form-container');
             formContainer.style.display = 'block';
-
             // เก็บ borrowId และ borrowDate ไว้ใน form เพื่อส่งไปด้วย
             var form = document.getElementById('extend-form');
             form.dataset.borrowId = borrowId;
             form.dataset.borrowDate = borrowDate;
-
             // ตั้งค่าขอบเขตวันที่ให้เลือกได้
             var returnDateInput = document.getElementById('return-date');
             var today = new Date();
             var minDate = today.toISOString().split('T')[0]; // วันต้องไม่ต่ำกว่าวันนี้
-
             // วันที่ยืมจะต้องเป็นวันที่ขั้นต่ำ
             var minReturnDate = new Date(borrowDate);
             minReturnDate.setDate(minReturnDate.getDate() + 1); // ต้องมากกว่าหนึ่งวันจากวันที่ยืม
             minReturnDate = minReturnDate.toISOString().split('T')[0];
-
             // เลือกวันที่ที่มากกว่าทั้งสองวัน
             var finalMinDate = (minDate > minReturnDate) ? minDate : minReturnDate;
             returnDateInput.setAttribute('min', finalMinDate);
@@ -436,12 +448,10 @@ $office_agency = $office_data['Agency'];
             var form = document.getElementById('extend-form');
             var borrowId = form.dataset.borrowId;
             var returnDate = document.getElementById('return-date').value;
-
             if (returnDate) {
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', 'update_return_date.php', true);
                 xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
                 xhr.onload = function() {
                     if (xhr.status === 200) {
                         alert(xhr.responseText);
@@ -450,7 +460,6 @@ $office_agency = $office_data['Agency'];
                         alert('เกิดข้อผิดพลาดในการอัพเดตข้อมูล');
                     }
                 };
-
                 xhr.send('b_id=' + encodeURIComponent(borrowId) + '&return_date=' + encodeURIComponent(returnDate));
             } else {
                 alert('กรุณาเลือกวันที่คืน');
@@ -461,6 +470,30 @@ $office_agency = $office_data['Agency'];
             var formContainer = document.getElementById('extend-form-container');
             formContainer.style.display = 'none';
         }
+        // กำหนดเวลาให้ข้อความหายไปหลังจาก 3 วินาที (3000 มิลลิวินาที)
+        setTimeout(function() {
+            var alertBox = document.getElementById('alertBox');
+            if (alertBox) {
+                alertBox.style.display = 'none';
+            }
+        }, 3000);
+        $(document).ready(function() {
+        $('#inputcategory').on('change', function() {
+            var type_id = $(this).val();
+            if (type_id) {
+                $.ajax({
+                    url: 'get_quantity.php', // ไฟล์ PHP สำหรับดึงข้อมูล
+                    type: 'POST',
+                    data: { type_id: type_id },
+                    success: function(response) {
+                        $('#inputQuantity').html(response);
+                    }
+                });
+            } else {
+                $('#inputQuantity').html('<option value="">--เลือกจำนวนเครื่อง--</option>');
+            }
+        });
+    });
     </script>
 
 </body>
