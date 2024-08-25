@@ -84,19 +84,21 @@ $u_id = $_SESSION['u_id'];
                     <form action="add_item_type.php" method="POST">
                         <div class="form-group">
                             <label for="type_name">ชื่อประเภท</label>
-                            <input type="text" class="form-control" id="type_name" name="type_name" required>
+                            <input type="text" class="form-control" id="type_name" name="type_name" maxlength="50" required>
                         </div>
                         <div class="form-group">
                             <label for="type_description">อธิบายอุปกรณ์</label>
-                            <textarea class="form-control" id="type_description" name="type_description" rows="3" required></textarea>
+                            <textarea class="form-control" id="type_description" name="type_description" maxlength="50" required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">บันทึกประเภทอุปกรณ์</button>
                     </form>
                 </div>
+
                 <!-- ฟอร์มเพิ่มอุปกรณ์ -->
                 <div id="addItemForm">
                     <form action="add_item.php" method="POST">
                         <div class="form-group">
+
                             <label for="ag_type">ประเภท</label>
                             <select class="form-control" id="ag_type" name="ag_type" required>
                                 <?php
@@ -113,7 +115,11 @@ $u_id = $_SESSION['u_id'];
                         </div>
                         <div class="form-group">
                             <label for="ag_id">รหัสอุปกรณ์</label>
-                            <input type="text" class="form-control" id="ag_id" name="ag_id" required>
+                            <input type="text" class="form-control" id="ag_id" name="ag_id" maxlength="50" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ag_name">ชื่ออุปกรณ์</label>
+                            <input type="text" class="form-control" id="ag_name" name="ag_name" maxlength="20" required>
                         </div>
                         <button type="submit" class="btn btn-primary">บันทึกอุปกรณ์</button>
                     </form>
@@ -161,76 +167,76 @@ $u_id = $_SESSION['u_id'];
                     ?>
                     <div class="row">
                         <div class="col-md-12">
-                        <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
-                            <thead>
-                                <tr>
-                                    <th>ลำดับ</th>
-                                    <th>ชื่อผู้ยืม</th>
-                                    <th>หน่วยงาน</th>
-                                    <th>ประเภทที่ยืม</th>
-                                    <th>จำนวนที่ทำการยืม</th>
-                                    <th>วันที่ยืม</th>
-                                    <th>กำหนดวันคืน</th>
-                                    <th>สถานะ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id 
+                            <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
+                                <thead>
+                                    <tr>
+                                        <th>ลำดับ</th>
+                                        <th>ชื่อผู้ยืม</th>
+                                        <th>หน่วยงาน</th>
+                                        <th>ประเภทที่ยืม</th>
+                                        <th>จำนวนที่ทำการยืม</th>
+                                        <th>วันที่ยืม</th>
+                                        <th>กำหนดวันคืน</th>
+                                        <th>สถานะ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id 
                                         FROM borroww b 
                                         JOIN users u ON b.u_id = u.u_id";
-                                $row_number = 1;
-                                $result = mysqli_query($conn, $sql);
+                                    $row_number = 1;
+                                    $result = mysqli_query($conn, $sql);
 
-                                if (mysqli_num_rows($result) > 0) {
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $type_id = $row['type_id'];
-                                        echo "<tr onclick='toggleDetails($row_number)'>";
-                                        echo "<td>" . $row_number . "</td>";
-                                        echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>";
-                                        echo "<td>" . $row['number'] . "</td>";
-                                        echo "<td>" . $row['type_id'] . "</td>";
-                                        echo "<td>" . $row['Brunum'] . "</td>";
-                                        echo "<td>" . $row['BrudateB'] . "</td>";
-                                        echo "<td>" . $row['BrudateRe'] . "</td>";
-                                        echo "<td>" . $row['st_id'] . "</td>";
-                                        echo "</tr>";
+                                    if (mysqli_num_rows($result) > 0) {
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $type_id = $row['type_id'];
+                                            echo "<tr onclick='toggleDetails($row_number)'>";
+                                            echo "<td>" . $row_number . "</td>";
+                                            echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>";
+                                            echo "<td>" . $row['number'] . "</td>";
+                                            echo "<td>" . $row['type_id'] . "</td>";
+                                            echo "<td>" . $row['Brunum'] . "</td>";
+                                            echo "<td>" . $row['BrudateB'] . "</td>";
+                                            echo "<td>" . $row['BrudateRe'] . "</td>";
+                                            echo "<td>" . $row['st_id'] . "</td>";
+                                            echo "</tr>";
 
-                                        echo "<tr id='details_$row_number' style='display: none;'>";
-                                        echo "<td colspan='8'>";
-                                        echo "<form action='confirm_borrow.php' method='POST'>";
-                                        echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
-                                        echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
-                                        for ($i = 0; $i < $row['Brunum']; $i++) {
-                                            echo "<div class='form-group'>";
-                                            
-                                            echo "<select class='form-control' id='ag_id_$row_number' name='ag_id[]' required>";
+                                            echo "<tr id='details_$row_number' style='display: none;'>";
+                                            echo "<td colspan='8'>";
+                                            echo "<form action='confirm_borrow.php' method='POST'>";
+                                            echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
+                                            echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
+                                            for ($i = 0; $i < $row['Brunum']; $i++) {
+                                                echo "<div class='form-group'>";
 
-                                            $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
-                                            $items_result = $conn->query($sql_items);
-                                            if ($items_result->num_rows > 0) {
-                                                while ($item = $items_result->fetch_assoc()) {
-                                                    echo "<option value='" . $item['ag_id'] . "'>" . $item['ag_id'] . "</option>";
+                                                echo "<select class='form-control' id='ag_id_$row_number' name='ag_id[]' required>";
+
+                                                $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
+                                                $items_result = $conn->query($sql_items);
+                                                if ($items_result->num_rows > 0) {
+                                                    while ($item = $items_result->fetch_assoc()) {
+                                                        echo "<option value='" . $item['ag_id'] . "'>" . $item['ag_id'] . "</option>";
+                                                    }
                                                 }
+
+                                                echo "</select>";
+                                                echo "</div>";
                                             }
 
-                                            echo "</select>";
-                                            echo "</div>";
+                                            echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
+                                            echo "</form>";
+                                            echo "</td>";
+                                            echo "</tr>";
+
+                                            $row_number++;
                                         }
-
-                                        echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
-                                        echo "</form>";
-                                        echo "</td>";
-                                        echo "</tr>";
-
-                                        $row_number++;
+                                    } else {
+                                        echo "<tr><td colspan='8'>No records found</td></tr>";
                                     }
-                                } else {
-                                    echo "<tr><td colspan='8'>No records found</td></tr>";
-                                }
-                                ?>
-                            </tbody>
-                        </table>
+                                    ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
