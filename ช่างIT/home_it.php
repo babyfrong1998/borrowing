@@ -182,8 +182,8 @@ $u_id = $_SESSION['u_id'];
                                 <tbody>
                                     <?php
                                     $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id, b.commen 
-        FROM borroww b 
-        JOIN users u ON b.u_id = u.u_id";
+                                    FROM borroww b 
+                                    JOIN users u ON b.u_id = u.u_id";
                                     $row_number = 1;
                                     $result = mysqli_query($conn, $sql);
 

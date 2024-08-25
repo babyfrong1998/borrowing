@@ -11,6 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $office_number = $_POST['office'];
     $st_id = $_POST['st_id'];
     $comment = isset($_POST['comment']) ? trim($_POST['comment']) : '';
+
     // Get the next BruID
     $sql = "SELECT IFNULL(MAX(BruID), 0) + 1 AS next_id FROM borroww";
     $result = mysqli_query($conn, $sql);
@@ -22,12 +23,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             VALUES ('$BruID', '$u_id', '$type_id', '$item_quantity', '$bordate', '$returnDate', '$office_number', '$st_id', '$comment')";
     
     if (mysqli_query($conn, $sql)) {
+        // Redirect with success query parameter
         header("Location: home.php?success=1");
         exit();
     } else {
         echo "Error: " . $sql . "<br>" . mysqli_error($conn);
     }
     mysqli_close($conn);
-  
 }
 ?>

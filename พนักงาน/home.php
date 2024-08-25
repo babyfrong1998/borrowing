@@ -185,13 +185,6 @@ $office_agency = $office_data['Agency'];
                     <input type="submit" class="extend-button" name="submit" value="บันทึกการยืม" id="submid">
                 </form>
                 <hr>
-                <?php
-                // ส่วนนี้อยู่ในตำแหน่งที่คุณต้องการให้แสดงกล่องข้อความ
-                if (isset($_GET['success']) && $_GET['success'] == 1) {
-                    echo  '<div id="alertBox" class="alert alert-success" role="alert">การยืมสำเร็จ!</div>';
-                }
-                ?>
-
                 <!-- HTML Form for Selecting Return Date -->
                 <div id="extend-form-container" style="display: none;">
                     <form id="extend-form">
@@ -478,22 +471,33 @@ $office_agency = $office_data['Agency'];
             }
         }, 3000);
         $(document).ready(function() {
-        $('#inputcategory').on('change', function() {
-            var type_id = $(this).val();
-            if (type_id) {
-                $.ajax({
-                    url: 'get_quantity.php', // ไฟล์ PHP สำหรับดึงข้อมูล
-                    type: 'POST',
-                    data: { type_id: type_id },
-                    success: function(response) {
-                        $('#inputQuantity').html(response);
-                    }
-                });
-            } else {
-                $('#inputQuantity').html('<option value="">--เลือกจำนวนเครื่อง--</option>');
+            $('#inputcategory').on('change', function() {
+                var type_id = $(this).val();
+                if (type_id) {
+                    $.ajax({
+                        url: 'get_quantity.php', // ไฟล์ PHP สำหรับดึงข้อมูล
+                        type: 'POST',
+                        data: {
+                            type_id: type_id
+                        },
+                        success: function(response) {
+                            $('#inputQuantity').html(response);
+                        }
+                    });
+                } else {
+                    $('#inputQuantity').html('<option value="">--เลือกจำนวนเครื่อง--</option>');
+                }
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+
+            if (success === '1') {
+                alert('เพิ่มข้อมูลเรียบร้อยแล้ว');
             }
         });
-    });
     </script>
 
 </body>
