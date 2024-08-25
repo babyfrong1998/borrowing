@@ -93,7 +93,6 @@ $u_id = $_SESSION['u_id'];
                         <button type="submit" class="btn btn-primary">บันทึกประเภทอุปกรณ์</button>
                     </form>
                 </div>
-
                 <!-- ฟอร์มเพิ่มอุปกรณ์ -->
                 <div id="addItemForm">
                     <form action="add_item.php" method="POST">
@@ -182,9 +181,9 @@ $u_id = $_SESSION['u_id'];
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id 
-                                        FROM borroww b 
-                                        JOIN users u ON b.u_id = u.u_id";
+                                    $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id, b.commen 
+        FROM borroww b 
+        JOIN users u ON b.u_id = u.u_id";
                                     $row_number = 1;
                                     $result = mysqli_query($conn, $sql);
 
@@ -204,12 +203,13 @@ $u_id = $_SESSION['u_id'];
 
                                             echo "<tr id='details_$row_number' style='display: none;'>";
                                             echo "<td colspan='8'>";
+                                            echo "<p><strong>หมายเหตุ:</strong> " . htmlspecialchars($row['commen']) . "</p>"; // แสดงข้อมูล commen
                                             echo "<form action='confirm_borrow.php' method='POST'>";
+
                                             echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
                                             echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
                                             for ($i = 0; $i < $row['Brunum']; $i++) {
                                                 echo "<div class='form-group'>";
-
                                                 echo "<select class='form-control' id='ag_id_$row_number' name='ag_id[]' required>";
 
                                                 $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
@@ -223,7 +223,6 @@ $u_id = $_SESSION['u_id'];
                                                 echo "</select>";
                                                 echo "</div>";
                                             }
-
                                             echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
                                             echo "</form>";
                                             echo "</td>";
