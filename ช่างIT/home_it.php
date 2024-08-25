@@ -207,6 +207,8 @@ $u_id = $_SESSION['u_id'];
                                             echo "<form action='confirm_borrow.php' method='POST'>";
 
                                             echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
+                                            echo "<input type='hidden' name='BrudateRe' value='" . $row['BrudateRe'] . "'>"; // ส่งข้อมูลวันที่คืน
+
                                             echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
                                             for ($i = 0; $i < $row['Brunum']; $i++) {
                                                 echo "<div class='form-group'>";
@@ -281,7 +283,7 @@ $u_id = $_SESSION['u_id'];
                 } else {
                     detailsRow.style.display = 'none';
                 }
-            }
+            } 
         </script>
 </body>
 
