@@ -216,7 +216,7 @@ $u_id = $_SESSION['u_id'];
                                                 $items_result = $conn->query($sql_items);
                                                 if ($items_result->num_rows > 0) {
                                                     while ($item = $items_result->fetch_assoc()) {
-                                                        echo "<option value='" . $item['ag_id'] . "'>" . $item['ag_id'] . "</option>";
+                                                        echo "<option value='" . $item['ag_id'] . "'>" . $item['ag_name'] . "</option>";
                                                     }
                                                 }
 
