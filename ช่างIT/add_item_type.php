@@ -27,13 +27,23 @@ if (isset($_POST['type_name']) && isset($_POST['type_description'])) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sss", $new_type_id, $type_name, $type_description);
     if ($stmt->execute()) {
-        echo "เพิ่มประเภทอุปกรณ์เรียบร้อยแล้ว พร้อมรหัสประเภท: " . $new_type_id;
+        // แสดงข้อความแจ้งเตือนและ redirect ไปยังหน้า home_it.php
+        echo "<script>
+                alert('เพิ่มประเภทอุปกรณ์เรียบร้อยแล้ว พร้อมรหัสประเภท: " . $new_type_id . "');
+                window.location.href = 'home_it.php';
+              </script>";
     } else {
-        echo "เกิดข้อผิดพลาด: " . $stmt->error;
+        echo "<script>
+                alert('เกิดข้อผิดพลาด: " . $stmt->error . "');
+                window.location.href = 'home_it.php';
+              </script>";
     }
     $stmt->close();
 } else {
-    echo "Error: Required data is missing.";
+    echo "<script>
+            alert('Error: Required data is missing.');
+            window.location.href = 'home_it.php';
+          </script>";
 }
 
 $conn->close();
