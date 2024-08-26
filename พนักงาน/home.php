@@ -231,56 +231,44 @@ $office_agency = $office_data['Agency'];
                     }
                     ?>
                     <div class="col-md-12">
-                        <table id="borrow_table" class="table display" style="width:100%;margin-top :20px;">
+                        <table id="borrow_table" class="table display" style="width:100%; margin-top: 20px;">
                             <thead>
                                 <tr>
                                     <th>ลำดับ</th>
-                                    <th>ชื่อประเภท</th>
-                                    <th>รหัสอุปกรณ์</th>
+                                    <th>ชื่อผู้ยืม</th>
+                                    <th>ประเภทที่ยืม</th>
+                                    <th>จำนวนที่ทำการยืม</th>
                                     <th>วันที่ยืม</th>
-                                    <th>วันที่คืน</th>
+                                    <th>กำหนดวันคืน</th>
                                     <th>สถานะ</th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
-                                // Filter records by u_id
-                                $sql = "SELECT b.b_id, b.b_name, b.b_date, b.b_return, b.b_status, sl.st_name, it.type_name 
-                                FROM borrowing b 
-                                JOIN items_1 i ON b.b_name = i.ag_id 
-                                JOIN item_type it ON i.ag_type = it.type_id 
-                                JOIN statuslist sl ON b.b_status = sl.st_id
-                                WHERE b.b_borower = '$u_id'
-                                ORDER BY 
-                                CASE 
-                                WHEN b.b_status = 'ST002' THEN 1
-                                WHEN b.b_status = 'ST005' THEN 2
-                                WHEN b.b_status = 'ST008' THEN 3
-                                WHEN b.b_status = 'ST007' THEN 4
-                                ELSE 5
-                                END, b.b_status";
+                                // Assuming you have a valid connection in $conn and $u_id is defined
+
+                                // Corrected SQL Query
+                                $sql = "
+            SELECT b.BruID, u.u_fname, u.u_lname, it.type_name, b.Brunum, b.BrudateB, b.BrudateRe, sl.st_name 
+            FROM borroww b
+            JOIN users u ON b.u_id = u.u_id
+            JOIN item_type it ON b.type_id = it.type_id  -- Assuming b.type_id exists and correctly references item_type table
+            JOIN statuslist sl ON b.st_id = sl.st_id
+            WHERE b.u_id = '$u_id'
+        ";
+
                                 $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     $i = 1; // Initialize counter for numbering
                                     while ($row = $result->fetch_assoc()) {
                                         echo "<tr>";
                                         echo "<td>" . $i . "</td>"; // Display the sequence number
+                                        echo "<td>" . $row["u_fname"] . " " . $row["u_lname"] . "</td>";
                                         echo "<td>" . $row["type_name"] . "</td>";
-                                        echo "<td>" . $row["b_name"] . "</td>";
-                                        echo "<td>" . $row["b_date"] . "</td>";
-                                        echo "<td>" . $row["b_return"] . "</td>";
+                                        echo "<td>" . $row["Brunum"] . "</td>";
+                                        echo "<td>" . $row["BrudateB"] . "</td>";
+                                        echo "<td>" . $row["BrudateRe"] . "</td>";
                                         echo "<td>" . $row["st_name"] . "</td>";
-                                        // Initialize empty cell content
-                                        $actionCellContent = "";
-                                        // Check conditions to set action buttons
-                                        if ($row["b_status"] == 'ST002' || $row["b_status"] == 'ST005') {
-                                            $actionCellContent = "<button class='return-button' onclick=\"returnItem('" . $row['b_id'] . "')\">แจ้งคืน</button>";
-                                        }
-                                        if ($row["b_status"] == 'ST005') {
-                                            $actionCellContent .= "<button class='extend-button' onclick=\"extendBorrowing('" . $row['b_id'] . "')\">ยืมต่อ</button>";
-                                        }
-                                        echo "<td>" . $actionCellContent . "</td>"; // Output the action cell content
                                         echo "</tr>";
                                         $i++; // Increment the counter
                                     }
@@ -291,6 +279,7 @@ $office_agency = $office_data['Agency'];
                                 ?>
                             </tbody>
                         </table>
+
                     </div>
                 </div>
             </div>
