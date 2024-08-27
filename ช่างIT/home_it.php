@@ -166,31 +166,32 @@ $u_id = $_SESSION['u_id'];
                     ?>
                     <div class="row">
                         <div class="col-md-12">
-                            <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
+                        <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
                                 <thead>
                                     <tr>
                                         <th>ลำดับ</th>
                                         <th>ชื่อผู้ยืม</th>
                                         <th>หน่วยงาน</th>
-                                        <th>ประเภทที่ยืม</th>
-                                        <th>จำนวนที่ทำการยืม</th>
+                                        <th>ประเภทอุปกรณ์</th>
+                                        <th>จำนวน</th>
                                         <th>วันที่ยืม</th>
-                                        <th>กำหนดวันคืน</th>
+                                        <th>วันที่คืน</th>
                                         <th>สถานะ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id, b.commen 
-FROM borroww b 
-JOIN users u ON b.u_id = u.u_id";
+                                    $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id, b.commen, s.st_name
+                                            FROM borroww b 
+                                            JOIN users u ON b.u_id = u.u_id
+                                            JOIN statuslist s ON b.st_id = s.st_id";
                                     $row_number = 1;
                                     $result = mysqli_query($conn, $sql);
 
                                     if (mysqli_num_rows($result) > 0) {
                                         while ($row = mysqli_fetch_assoc($result)) {
                                             $type_id = $row['type_id'];
-                                            $st_id = $row['st_id'];
+                                            $st_name = $row['st_name']; // Use st_name instead of st_id
 
                                             echo "<tr onclick='toggleDetails($row_number)'>";
                                             echo "<td>" . $row_number . "</td>";
@@ -200,7 +201,7 @@ JOIN users u ON b.u_id = u.u_id";
                                             echo "<td>" . $row['Brunum'] . "</td>";
                                             echo "<td>" . $row['BrudateB'] . "</td>";
                                             echo "<td>" . $row['BrudateRe'] . "</td>";
-                                            echo "<td>" . $st_id . "</td>";
+                                            echo "<td>" . $st_name . "</td>"; // Display status name instead of id
                                             echo "</tr>";
 
                                             // เริ่มแสดงผลตามสถานะ
@@ -208,7 +209,7 @@ JOIN users u ON b.u_id = u.u_id";
                                             echo "<td colspan='8'>";
                                             echo "<p><strong>หมายเหตุ:</strong> " . htmlspecialchars($row['commen']) . "</p>"; // แสดงข้อมูล commen
 
-                                            if ($st_id == 'ST007') {
+                                            if ($row['st_id'] == 'ST007') {
                                                 // สถานะรอยืนยันการยืม
                                                 echo "<form action='confirm_borrow.php' method='POST'>";
                                                 echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
@@ -237,7 +238,7 @@ JOIN users u ON b.u_id = u.u_id";
                                             
                                                 echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
                                                 echo "</form>";
-                                            }elseif ($st_id == 'ST002' || $st_id == 'ST005') {
+                                            } elseif ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005') {
                                                 // สถานะยืมใช้งานอยู่
                                                 echo "<form action='update_borrow.php' method='POST'>";
                                                 echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
@@ -258,7 +259,7 @@ JOIN users u ON b.u_id = u.u_id";
 
                                                 echo "<button type='submit' class='btn btn-primary'>บันทึกการเปลี่ยนแปลง</button>";
                                                 echo "</form>";
-                                            } elseif ($st_id == 'ST006') {
+                                            } elseif ($row['st_id'] == 'ST006') {
                                                 // สถานะรอยืนยันการคืน
                                                 echo "<form action='confirm_return.php' method='POST'>";
                                                 echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
@@ -297,7 +298,6 @@ JOIN users u ON b.u_id = u.u_id";
                                         echo "<tr><td colspan='8'>No records found</td></tr>";
                                     }
                                     ?>
-
                                 </tbody>
                             </table>
                         </div>

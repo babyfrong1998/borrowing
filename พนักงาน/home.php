@@ -185,15 +185,6 @@ $office_agency = $office_data['Agency'];
                     <input type="submit" class="extend-button" name="submit" value="บันทึกการยืม" id="submid">
                 </form>
                 <hr>
-                <!-- HTML Form for Selecting Return Date -->
-                <div id="extend-form-container" style="display: none;">
-                    <form id="extend-form">
-                        <label for="return-date">เลือกวันที่คืน:</label>
-                        <input type="date" id="return-date" name="return-date" required>
-                        <button type="button" onclick="submitReturnDate()">ยืนยัน</button>
-                        <button type="button" onclick="cancelForm()">ยกเลิก</button>
-                    </form>
-                </div>
                 <div class="row">
                     <?php
                     $sql = "SELECT * FROM item_type";
@@ -231,54 +222,95 @@ $office_agency = $office_data['Agency'];
                     }
                     ?>
                     <div class="col-md-12">
-                        <table id="borrow_table" class="table display" style="width:100%; margin-top: 20px;">
+                        <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
                             <thead>
                                 <tr>
                                     <th>ลำดับ</th>
                                     <th>ชื่อผู้ยืม</th>
-                                    <th>ประเภทที่ยืม</th>
-                                    <th>จำนวนที่ทำการยืม</th>
+                                    <th>หน่วยงาน</th>
+                                    <th>ประเภทอุปกรณ์</th>
+                                    <th>จำนวน</th>
                                     <th>วันที่ยืม</th>
-                                    <th>กำหนดวันคืน</th>
+                                    <th>วันที่คืน</th>
                                     <th>สถานะ</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
-                                // Assuming you have a valid connection in $conn and $u_id is defined
+                                $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id, b.commen, s.st_name
+                FROM borroww b 
+                JOIN users u ON b.u_id = u.u_id
+                JOIN statuslist s ON b.st_id = s.st_id
+                WHERE b.u_id = '$u_id'";
+                                $row_number = 1;
+                                $result = mysqli_query($conn, $sql);
 
-                                // Corrected SQL Query
-                                $sql = "
-            SELECT b.BruID, u.u_fname, u.u_lname, it.type_name, b.Brunum, b.BrudateB, b.BrudateRe, sl.st_name 
-            FROM borroww b
-            JOIN users u ON b.u_id = u.u_id
-            JOIN item_type it ON b.type_id = it.type_id  -- Assuming b.type_id exists and correctly references item_type table
-            JOIN statuslist sl ON b.st_id = sl.st_id
-            WHERE b.u_id = '$u_id'
-        ";
+                                if (mysqli_num_rows($result) > 0) {
+                                    while ($row = mysqli_fetch_assoc($result)) {
+                                        $type_id = $row['type_id'];
+                                        $st_name = $row['st_name']; // Use st_name instead of st_id
 
-                                $result = $conn->query($sql);
-                                if ($result->num_rows > 0) {
-                                    $i = 1; // Initialize counter for numbering
-                                    while ($row = $result->fetch_assoc()) {
-                                        echo "<tr>";
-                                        echo "<td>" . $i . "</td>"; // Display the sequence number
-                                        echo "<td>" . $row["u_fname"] . " " . $row["u_lname"] . "</td>";
-                                        echo "<td>" . $row["type_name"] . "</td>";
-                                        echo "<td>" . $row["Brunum"] . "</td>";
-                                        echo "<td>" . $row["BrudateB"] . "</td>";
-                                        echo "<td>" . $row["BrudateRe"] . "</td>";
-                                        echo "<td>" . $row["st_name"] . "</td>";
+                                        echo "<tr onclick='toggleDetails($row_number)'>";
+                                        echo "<td>" . $row_number . "</td>";
+                                        echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>";
+                                        echo "<td>" . $row['number'] . "</td>";
+                                        echo "<td>" . $row['type_id'] . "</td>";
+                                        echo "<td>" . $row['Brunum'] . "</td>";
+                                        echo "<td>" . $row['BrudateB'] . "</td>";
+                                        echo "<td>" . $row['BrudateRe'] . "</td>";
+                                        echo "<td>" . $st_name . "</td>";
                                         echo "</tr>";
-                                        $i++; // Increment the counter
+
+                                        echo "<tr id='details_$row_number' style='display: none;'>";
+                                        echo "<td colspan='8'>";
+                                        echo "<p><strong>หมายเหตุ:</strong> " . htmlspecialchars($row['commen']) . "</p>";
+
+                                        if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005' || $row['st_id'] == 'ST008') {
+                                            echo "<form action='updateStatus.php' method='POST'>";
+                                            echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
+                                            echo "<label for='ag_id_$row_number'>อุปกรณ์ที่ยืม</label>";
+
+                                            $sql_items = "SELECT ag_id, ag_status FROM items_1 WHERE ag_type = '$type_id' AND BruID = '" . htmlspecialchars($row['BruID']) . "'";
+                                            $items_result = $conn->query($sql_items);
+
+                                            if ($items_result->num_rows > 0) {
+                                                while ($item = $items_result->fetch_assoc()) {
+                                                    echo "<div class='form-group' style='display: flex; align-items: center;'>";
+                                                    echo "<p style='flex: 1; margin: 0;'>" . htmlspecialchars($item['ag_id']) . "</p>";
+                                                    echo "<input type='hidden' name='ag_id[]' value='" . htmlspecialchars($item['ag_id']) . "'>";
+
+                                                    if ($item['ag_status'] == 'ST002' || $item['ag_status'] == 'ST005') {
+                                                        echo "<button type='button' id='return-item-" . htmlspecialchars($item['ag_id']) . "' class='btn btn-warning' onclick='returnItem(\"" . htmlspecialchars($item['ag_id']) . "\", \"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนอุปกรณ์นี้</button>";
+                                                    } else {
+                                                        echo "<button type='button' id='return-item-" . htmlspecialchars($item['ag_id']) . "' class='btn btn-secondary' disabled>อุปกรณ์นี้แจ้งคืนแล้ว</button>";
+                                                    }
+                                                    echo "</div>";
+                                                }
+                                            } else {
+                                                echo "<p>ไม่มีอุปกรณ์ที่ยืมอยู่ในสถานะปัจจุบัน</p>";
+                                            }
+
+                                            if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005') {
+                                                echo "<button type='submit' class='btn btn-primary' name='return_all'>แจ้งคืนทั้งหมด</button>";
+                                            } else if ($row['st_id'] == 'ST008') {
+                                                echo "<button type='submit' class='btn btn-primary' name='return_all' disabled>แจ้งคืนทั้งหมด</button>";
+                                            }
+
+                                            echo "</form>";
+                                        }
+
+                                        echo "</td>";
+                                        echo "</tr>";
+
+                                        $row_number++;
                                     }
                                 } else {
-                                    echo "<tr><td colspan='7'>No data found</td></tr>";
+                                    echo "<tr><td colspan='8'>No records found</td></tr>";
                                 }
-                                $conn->close();
                                 ?>
                             </tbody>
                         </table>
+
 
                     </div>
                 </div>
@@ -304,27 +336,6 @@ $office_agency = $office_data['Agency'];
             var form = document.getElementById("formdata");
             form.style.display = form.style.display === "none" ? "block" : "none";
         }
-
-        function searchTable() {
-            var input, filter, table, tr, td, i, j, txtValue;
-            input = document.getElementById("searchInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("borrow_table");
-            tr = table.getElementsByTagName("tr");
-            for (i = 1; i < tr.length; i++) {
-                tr[i].style.display = "none";
-                td = tr[i].getElementsByTagName("td");
-                for (j = 0; j < td.length; j++) {
-                    if (td[j]) {
-                        txtValue = td[j].textContent || td[j].innerText;
-                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                            tr[i].style.display = "";
-                            break;
-                        }
-                    }
-                }
-            }
-        }
         let ch = 0;
         $(document).ready(function() {
             $('.s_select').selectpicker();
@@ -342,28 +353,6 @@ $office_agency = $office_data['Agency'];
                 ch = 0;
             }
         }
-
-        function adddata() {
-            var formdata = document.getElementById('formdata');
-            var data = formdata.getElementsByTagName('Input');
-        }
-
-        function updateItemCodes(typeId) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'getItemCodes.php?type_id=' + typeId, true);
-            xhr.onload = function() {
-                if (this.status === 200) {
-                    const agIds = JSON.parse(this.responseText);
-                    let options = '<option value="">-- เลือกรหัสครุภัณฑ์ --</option>';
-                    agIds.forEach(function(ag) {
-                        options += `<option value="${ag.ag_id}">${ag.ag_id}</option>`;
-                    });
-                    document.getElementById('itemselect').innerHTML = options;
-                    $('.selectpicker').selectpicker('refresh');
-                }
-            };
-            xhr.send();
-        }
         document.getElementById('formdata').addEventListener('submit', function(event) {
             var bordate = document.getElementById('bordate').value;
             var itemselect = document.getElementById('itemselect').value;
@@ -371,23 +360,6 @@ $office_agency = $office_data['Agency'];
             if (!bordate || !itemselect) {
                 alert('กรุณากรอกข้อมูลให้ครบถ้วน');
                 event.preventDefault(); // ป้องกันการส่งฟอร์ม
-            }
-        });
-        document.getElementById('formdata').addEventListener('submit', function(event) {
-            var bordate = document.getElementById('bordate').value;
-            var returnDate = document.getElementById('returnDate').value;
-            var itemselect = document.getElementById('itemselect').value;
-            // ตรวจสอบไม่ให้ returnDate น้อยกว่า bordate
-            if (new Date(returnDate) < new Date(bordate)) {
-                alert('วันกำหนดคืนต้องไม่ต่ำกว่าวันที่ยืม');
-                event.preventDefault(); // หยุดการส่งฟอร์ม
-                return false;
-            }
-            // ตรวจสอบว่ามีการเลือกอุปกรณ์
-            if (itemselect === '') {
-                alert('กรุณาเลือกรหัสครุภัณฑ์');
-                event.preventDefault();
-                return false;
             }
         });
         $(document).ready(function() {
@@ -425,40 +397,6 @@ $office_agency = $office_data['Agency'];
             var finalMinDate = (minDate > minReturnDate) ? minDate : minReturnDate;
             returnDateInput.setAttribute('min', finalMinDate);
         }
-
-        function submitReturnDate() {
-            var form = document.getElementById('extend-form');
-            var borrowId = form.dataset.borrowId;
-            var returnDate = document.getElementById('return-date').value;
-            if (returnDate) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'update_return_date.php', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        alert(xhr.responseText);
-                        location.reload(); // รีเฟรชหน้าเพื่อแสดงข้อมูลที่อัพเดต
-                    } else {
-                        alert('เกิดข้อผิดพลาดในการอัพเดตข้อมูล');
-                    }
-                };
-                xhr.send('b_id=' + encodeURIComponent(borrowId) + '&return_date=' + encodeURIComponent(returnDate));
-            } else {
-                alert('กรุณาเลือกวันที่คืน');
-            }
-        }
-
-        function cancelForm() {
-            var formContainer = document.getElementById('extend-form-container');
-            formContainer.style.display = 'none';
-        }
-        // กำหนดเวลาให้ข้อความหายไปหลังจาก 3 วินาที (3000 มิลลิวินาที)
-        setTimeout(function() {
-            var alertBox = document.getElementById('alertBox');
-            if (alertBox) {
-                alertBox.style.display = 'none';
-            }
-        }, 3000);
         $(document).ready(function() {
             $('#inputcategory').on('change', function() {
                 var type_id = $(this).val();
@@ -478,15 +416,91 @@ $office_agency = $office_data['Agency'];
                 }
             });
         });
-
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
             const success = urlParams.get('success');
-
             if (success === '1') {
                 alert('เพิ่มข้อมูลเรียบร้อยแล้ว');
             }
         });
+
+        function toggleForm(formId) {
+            var form = document.getElementById(formId);
+            if (form.style.display === "none" || form.style.display === "") {
+                form.style.display = "block";
+            } else {
+                form.style.display = "none";
+            }
+        }
+
+        function toggleDetails(rowId) {
+            var detailsRow = document.getElementById('details_' + rowId);
+            if (detailsRow.style.display === 'none') {
+                detailsRow.style.display = '';
+            } else {
+                detailsRow.style.display = 'none';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const selects = document.querySelectorAll('.ag-select');
+
+            selects.forEach((select, index) => {
+                select.addEventListener('change', function() {
+                    // เก็บค่าอุปกรณ์ที่เลือกไว้ในแถวนี้
+                    const selectedValues = [];
+                    selects.forEach((sel) => {
+                        if (sel.value) {
+                            selectedValues.push(sel.value);
+                        }
+                    });
+
+                    // กรองตัวเลือกใน select ของแถวถัดไป
+                    selects.forEach((sel, idx) => {
+                        if (idx > index) {
+                            sel.querySelectorAll('option').forEach((option) => {
+                                if (selectedValues.includes(option.value)) {
+                                    option.style.display = 'none';
+                                } else {
+                                    option.style.display = '';
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        });
+
+        function returnItem(ag_id, BruID) {
+            if (confirm("คุณต้องการแจ้งคืนอุปกรณ์นี้หรือไม่?")) {
+                // ทำการส่ง AJAX request ไปยังสคริปต์ PHP เพื่ออัพเดทสถานะ
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "updateStatus.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        alert("อัพเดทสถานะสำเร็จแล้ว");
+                        location.reload(); // รีโหลดหน้าเพื่อแสดงผลการอัปเดต
+                    }
+                };
+                xhr.send("ag_id=" + ag_id + "&BruID=" + BruID);
+            }
+        }
+
+        function returnAllItems(BruID) {
+            if (confirm("คุณต้องการแจ้งคืนอุปกรณ์ทั้งหมดหรือไม่?")) {
+                // ทำการส่ง AJAX request ไปยังสคริปต์ PHP เพื่ออัพเดทสถานะ
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "updateAllStatus.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        alert("อัพเดทสถานะสำเร็จแล้ว");
+                        location.reload(); // รีโหลดหน้าเพื่อแสดงผลการอัปเดต
+                    }
+                };
+                xhr.send("BruID=" + BruID);
+            }
+        }
     </script>
 
 </body>
