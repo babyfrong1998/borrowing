@@ -161,7 +161,6 @@ $office_agency = $office_data['Agency'];
                                 <!-- Option จะถูกเติมโดย JavaScript -->
                             </select>
                         </div>
-
                         <div class="col-md-4">
                             <label for="comment">หมายเหตุ</label>
                             <input type="text" class="form-control w-100" id="comment" name="comment" maxlength="50" placeholder="ระบุข้อมูลการยืมเพิ่มเติม">
@@ -176,7 +175,6 @@ $office_agency = $office_data['Agency'];
                             <br>
                             <input type="datetime-local" class="form-control w-100" id="returnDate" name="returnDate">
                         </div>
-
                         <div class="col-md-6"></div>
                         <input type="hidden" name="st_id" value="ST007">
                     </div>
@@ -244,12 +242,10 @@ $office_agency = $office_data['Agency'];
                 WHERE b.u_id = '$u_id'";
                                 $row_number = 1;
                                 $result = mysqli_query($conn, $sql);
-
                                 if (mysqli_num_rows($result) > 0) {
                                     while ($row = mysqli_fetch_assoc($result)) {
                                         $type_id = $row['type_id'];
                                         $st_name = $row['st_name']; // Use st_name instead of st_id
-
                                         echo "<tr onclick='toggleDetails($row_number)'>";
                                         echo "<td>" . $row_number . "</td>";
                                         echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>";
@@ -260,27 +256,42 @@ $office_agency = $office_data['Agency'];
                                         echo "<td>" . $row['BrudateRe'] . "</td>";
                                         echo "<td>" . $st_name . "</td>";
                                         echo "</tr>";
-
                                         echo "<tr id='details_$row_number' style='display: none;'>";
                                         echo "<td colspan='8'>";
                                         echo "<p><strong>หมายเหตุ:</strong> " . htmlspecialchars($row['commen']) . "</p>";
-
-                                        if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005' || $row['st_id'] == 'ST008') {
+                                        if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005' || $row['st_id'] == 'ST008' || $row['st_id'] == 'ST006') {
+                                            echo "<form id='return-all-form' action='updateAllStatus.php' method='POST' style='display:none;'>";
+                                            echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
+                                            echo "</form>";
+                                        
                                             echo "<form action='updateStatus.php' method='POST'>";
                                             echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                             echo "<label for='ag_id_$row_number'>อุปกรณ์ที่ยืม</label>";
-
+                                        
                                             $sql_items = "SELECT ag_id, ag_status FROM items_1 WHERE ag_type = '$type_id' AND BruID = '" . htmlspecialchars($row['BruID']) . "'";
                                             $items_result = $conn->query($sql_items);
-
+                                        
+                                            $status_count = 0;
                                             if ($items_result->num_rows > 0) {
+                                                while ($item = $items_result->fetch_assoc()) {
+                                                    if ($item['ag_status'] == 'ST002' || $item['ag_status'] == 'ST005') {
+                                                        $status_count++;
+                                                    }
+                                                }
+                                        
+                                                $items_result->data_seek(0);
+                                        
                                                 while ($item = $items_result->fetch_assoc()) {
                                                     echo "<div class='form-group' style='display: flex; align-items: center;'>";
                                                     echo "<p style='flex: 1; margin: 0;'>" . htmlspecialchars($item['ag_id']) . "</p>";
                                                     echo "<input type='hidden' name='ag_id[]' value='" . htmlspecialchars($item['ag_id']) . "'>";
-
+                                        
                                                     if ($item['ag_status'] == 'ST002' || $item['ag_status'] == 'ST005') {
-                                                        echo "<button type='button' id='return-item-" . htmlspecialchars($item['ag_id']) . "' class='btn btn-warning' onclick='returnItem(\"" . htmlspecialchars($item['ag_id']) . "\", \"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนอุปกรณ์นี้</button>";
+                                                        if ($status_count == 1) {
+                                                            echo "<button type='button' id='return-all' class='btn btn-warning' onclick='returnAllItems(\"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนทั้งหมด</button>";
+                                                        } else {
+                                                            echo "<button type='button' id='return-item-" . htmlspecialchars($item['ag_id']) . "' class='btn btn-warning' onclick='returnItem(\"" . htmlspecialchars($item['ag_id']) . "\", \"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนอุปกรณ์นี้</button>";
+                                                        }
                                                     } else {
                                                         echo "<button type='button' id='return-item-" . htmlspecialchars($item['ag_id']) . "' class='btn btn-secondary' disabled>อุปกรณ์นี้แจ้งคืนแล้ว</button>";
                                                     }
@@ -289,19 +300,19 @@ $office_agency = $office_data['Agency'];
                                             } else {
                                                 echo "<p>ไม่มีอุปกรณ์ที่ยืมอยู่ในสถานะปัจจุบัน</p>";
                                             }
-
-                                            if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005') {
-                                                echo "<button type='submit' class='btn btn-primary' name='return_all'>แจ้งคืนทั้งหมด</button>";
+                                        
+                                            if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005' || $row['st_id'] == 'ST006') {
+                                                echo "<button type='button' id='return-all' class='btn btn-primary' onclick='returnAllItems(\"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนทั้งหมด</button>";
                                             } else if ($row['st_id'] == 'ST008') {
                                                 echo "<button type='submit' class='btn btn-primary' name='return_all' disabled>แจ้งคืนทั้งหมด</button>";
                                             }
-
+                                        
                                             echo "</form>";
                                         }
-
+                                        
+                                        
                                         echo "</td>";
                                         echo "</tr>";
-
                                         $row_number++;
                                     }
                                 } else {
@@ -310,8 +321,6 @@ $office_agency = $office_data['Agency'];
                                 ?>
                             </tbody>
                         </table>
-
-
                     </div>
                 </div>
             </div>
