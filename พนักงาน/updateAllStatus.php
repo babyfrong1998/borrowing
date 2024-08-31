@@ -4,7 +4,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $BruID = $_POST['BruID'];
 
     // อัพเดทสถานะ ag_status เป็น ST008 สำหรับ ag_id ทั้งหมดที่เป็น ST002 หรือ ST005 ในตาราง items_1
-    $sql_items = "UPDATE items_1 SET ag_status = 'ST008' WHERE BruID = ? AND (ag_status = 'ST002' OR ag_status = 'ST005')";
+    $sql_items = "UPDATE items_1 SET ag_status = 'ST008' WHERE BruID = ? AND (ag_status = 'ST002' OR ag_status = 'ST005'OR ag_status = 'ST006')";
 
     // อัพเดทสถานะ st_id เป็น ST008 สำหรับ record ที่ตรงกับ BruID ในตาราง borroww
     $sql_borroww = "UPDATE borroww SET st_id = 'ST008' WHERE BruID = ? AND (st_id = 'ST002' OR st_id = 'ST005' OR st_id = 'ST006')";

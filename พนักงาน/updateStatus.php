@@ -4,8 +4,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $ag_id = $_POST['ag_id']; // จะยังใช้ในตาราง items_1
     $BruID = $_POST['BruID']; // ใช้ในทั้งสองตาราง
 
-    // อัพเดทสถานะ ag_status เป็น ST008 ในตาราง items_1
-    $sql = "UPDATE items_1 SET ag_status = 'ST008' WHERE ag_id = ? AND BruID = ?";
+    // อัพเดทสถานะ ag_status เป็น ST006 ในตาราง items_1
+    $sql = "UPDATE items_1 SET ag_status = 'ST006' WHERE ag_id = ? AND BruID = ?";
     
     if ($stmt = $conn->prepare($sql)) {
         $stmt->bind_param("ss", $ag_id, $BruID);

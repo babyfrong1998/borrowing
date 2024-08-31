@@ -166,7 +166,7 @@ $u_id = $_SESSION['u_id'];
                     ?>
                     <div class="row">
                         <div class="col-md-12">
-                        <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
+                            <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
                                 <thead>
                                     <tr>
                                         <th>ลำดับ</th>
@@ -211,12 +211,12 @@ $u_id = $_SESSION['u_id'];
 
                                             if ($row['st_id'] == 'ST007') {
                                                 // สถานะรอยืนยันการยืม
-                                                echo "<form action='confirm_borrow.php' method='POST'>";
+                                                echo "<form id='borrowForm' action='confirm_borrow.php' method='POST' onsubmit='return validateForm()'>";
                                                 echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
                                                 echo "<input type='hidden' name='BrudateRe' value='" . $row['BrudateRe'] . "'>"; // ส่งข้อมูลวันที่คืน
-                                            
+
                                                 echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
-                                            
+
                                                 // สร้างรายการตัวเลือกทั้งหมดเพียงครั้งเดียว
                                                 $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
                                                 $items_result = $conn->query($sql_items);
@@ -226,7 +226,7 @@ $u_id = $_SESSION['u_id'];
                                                         $items_options[] = "<option value='" . $item['ag_id'] . "'>" . $item['ag_name'] . "</option>";
                                                     }
                                                 }
-                                            
+
                                                 // แสดง dropdown สำหรับแต่ละแถว
                                                 for ($i = 0; $i < $row['Brunum']; $i++) {
                                                     echo "<div class='form-group'>";
@@ -235,7 +235,7 @@ $u_id = $_SESSION['u_id'];
                                                     echo "</select>";
                                                     echo "</div>";
                                                 }
-                                            
+
                                                 echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
                                                 echo "</form>";
                                             } elseif ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005') {
@@ -257,39 +257,42 @@ $u_id = $_SESSION['u_id'];
                                                     }
                                                 }
 
-                                                echo "<button type='submit' class='btn btn-primary'>บันทึกการเปลี่ยนแปลง</button>";
+                                                //echo "<button type='submit' class='btn btn-primary'>บันทึกการเปลี่ยนแปลง</button>";
                                                 echo "</form>";
-                                            } elseif ($row['st_id'] == 'ST006') {
-                                                // สถานะรอยืนยันการคืน
+                                            } elseif ($row['st_id'] == 'ST006' || $row['st_id'] == 'ST008') {
                                                 echo "<form action='confirm_return.php' method='POST'>";
-                                                echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
+                                                echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                                 echo "<label for='ag_id_$row_number'>อุปกรณ์ที่แจ้งคืน</label>";
-                                                for ($i = 0; $i < $row['Brunum']; $i++) {
-                                                    echo "<div class='form-group'>";
-                                                    echo "<select class='form-control' id='ag_id_$row_number' name='ag_id[]' required>";
 
-                                                    $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST006' AND BruID = '" . $row['BruID'] . "'";
-                                                    $items_result = $conn->query($sql_items);
+                                                $sql_items = "SELECT ag_id, ag_name, ag_status FROM items_1 WHERE ag_type = '$type_id' AND (ag_status = 'ST008' OR ag_status = 'ST009'OR ag_status = 'ST006') AND BruID = '" . $row['BruID'] . "'";
+                                                $items_result = $conn->query($sql_items);
 
-                                                    if ($items_result->num_rows > 0) {
-                                                        while ($item = $items_result->fetch_assoc()) {
-                                                            echo "<div class='form-group'>";
-                                                            // แสดงชื่ออุปกรณ์โดยตรง
-                                                            echo "<p>" . htmlspecialchars($item['ag_name']) . "</p>";
-                                                            echo "<input type='hidden' name='ag_id[]' value='" . $item['ag_id'] . "'>";
-                                                            echo "</div>";
+                                                if ($items_result->num_rows > 0) {
+                                                    while ($item = $items_result->fetch_assoc()) {
+                                                        echo "<div class='form-group' style='display: flex; align-items: center; justify-content: space-between;'>";
+
+                                                        // แสดงชื่ออุปกรณ์
+                                                        echo "<p style='margin-right: 10px;'>" . htmlspecialchars($item['ag_name']) . "</p>";
+
+                                                        // ตรวจสอบสถานะ ag_status
+                                                        if ($item['ag_status'] == 'ST009') {
+                                                            // ปุ่มแสดงสถานะคืนอุปกรณ์แล้ว และไม่สามารถกดได้
+                                                            echo "<button type='button' class='btn btn-success' disabled>รับคืนอุปกรณ์แล้ว</button>";
+                                                        } else {
+                                                            // ปุ่มยืนยันคืนอุปกรณ์
+                                                            echo "<button type='button' id='return-item-" . htmlspecialchars($item['ag_id']) . "' class='btn btn-warning' onclick='returnItem(\"" . htmlspecialchars($item['ag_id']) . "\", \"" . htmlspecialchars($row['BruID']) . "\")'>ยืนยันคืนอุปกรณ์นี้</button>";
                                                         }
-                                                    }
 
-                                                    echo "</select>";
-                                                    echo "</div>";
+                                                        echo "</div>";
+                                                    }
                                                 }
-                                                echo "<button type='submit' class='btn btn-primary'>ยืนยันการคืน</button>";
-                                                echo "<button type='button' class='btn btn-danger' onclick='confirmReturnAll(" . $row['BruID'] . ")'>ยืนยันการคืนทั้งหมด</button>";
+
                                                 echo "</form>";
                                             }
 
-                                            echo "</td>";
+
+
+
                                             echo "</tr>";
 
                                             $row_number++;
@@ -347,33 +350,71 @@ $u_id = $_SESSION['u_id'];
                 }
             }
             document.addEventListener('DOMContentLoaded', function() {
-    const selects = document.querySelectorAll('.ag-select');
+                const selects = document.querySelectorAll('.ag-select');
 
-    selects.forEach((select, index) => {
-        select.addEventListener('change', function() {
-            // เก็บค่าอุปกรณ์ที่เลือกไว้ในแถวนี้
-            const selectedValues = [];
-            selects.forEach((sel) => {
-                if (sel.value) {
-                    selectedValues.push(sel.value);
-                }
-            });
+                selects.forEach((select, index) => {
+                    select.addEventListener('change', function() {
+                        // เก็บค่าอุปกรณ์ที่เลือกไว้ในแถวนี้
+                        const selectedValues = [];
+                        selects.forEach((sel) => {
+                            if (sel.value) {
+                                selectedValues.push(sel.value);
+                            }
+                        });
 
-            // กรองตัวเลือกใน select ของแถวถัดไป
-            selects.forEach((sel, idx) => {
-                if (idx > index) {
-                    sel.querySelectorAll('option').forEach((option) => {
-                        if (selectedValues.includes(option.value)) {
-                            option.style.display = 'none';
-                        } else {
-                            option.style.display = '';
-                        }
+                        // กรองตัวเลือกใน select ของแถวถัดไป
+                        selects.forEach((sel, idx) => {
+                            if (idx > index) {
+                                sel.querySelectorAll('option').forEach((option) => {
+                                    if (selectedValues.includes(option.value)) {
+                                        option.style.display = 'none';
+                                    } else {
+                                        option.style.display = '';
+                                    }
+                                });
+                            }
+                        });
                     });
-                }
+                });
             });
-        });
-    });
-});
+
+            function validateForm() {
+                var ag_selects = document.querySelectorAll('.ag-select');
+                var selectedValues = [];
+                for (var i = 0; i < ag_selects.length; i++) {
+                    var value = ag_selects[i].value;
+                    if (selectedValues.includes(value)) {
+                        alert('คุณเลือกอุปกรณ์ซ้ำกัน กรุณาเลือกอุปกรณ์ที่ไม่ซ้ำกัน');
+                        return false; // หยุดการส่งฟอร์ม
+                    }
+                    selectedValues.push(value);
+                }
+                return true; // อนุญาตให้ส่งฟอร์มได้
+            }
+
+            function returnItem(ag_id) {
+                // สร้าง AJAX request เพื่อส่งข้อมูลไปยังเซิร์ฟเวอร์
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "confirm_return.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                // เมื่อ request สำเร็จ
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        console.log(xhr.responseText);  // เพิ่มการตรวจสอบนี้
+                        // เปลี่ยนปุ่มเป็นสถานะคืนอุปกรณ์แล้ว
+                        var button = document.getElementById('return-item-' + ag_id);
+                        button.innerText = 'คืนอุปกรณ์แล้ว';
+                        button.classList.remove('btn-warning');
+                        button.classList.add('btn-success');
+                        button.disabled = true;
+                    }
+                };
+
+                // ส่ง ag_id ไปที่เซิร์ฟเวอร์
+                xhr.send("ag_id=" + ag_id + "&action=confirm_return");
+            }
+            
         </script>
 </body>
 
