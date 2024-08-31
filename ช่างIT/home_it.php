@@ -182,14 +182,16 @@ $u_id = $_SESSION['u_id'];
                                 <tbody>
                                     <?php
                                     $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id, b.commen 
-                                    FROM borroww b 
-                                    JOIN users u ON b.u_id = u.u_id";
+FROM borroww b 
+JOIN users u ON b.u_id = u.u_id";
                                     $row_number = 1;
                                     $result = mysqli_query($conn, $sql);
 
                                     if (mysqli_num_rows($result) > 0) {
                                         while ($row = mysqli_fetch_assoc($result)) {
                                             $type_id = $row['type_id'];
+                                            $st_id = $row['st_id'];
+
                                             echo "<tr onclick='toggleDetails($row_number)'>";
                                             echo "<td>" . $row_number . "</td>";
                                             echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>";
@@ -198,33 +200,94 @@ $u_id = $_SESSION['u_id'];
                                             echo "<td>" . $row['Brunum'] . "</td>";
                                             echo "<td>" . $row['BrudateB'] . "</td>";
                                             echo "<td>" . $row['BrudateRe'] . "</td>";
-                                            echo "<td>" . $row['st_id'] . "</td>";
+                                            echo "<td>" . $st_id . "</td>";
                                             echo "</tr>";
 
+                                            // เริ่มแสดงผลตามสถานะ
                                             echo "<tr id='details_$row_number' style='display: none;'>";
                                             echo "<td colspan='8'>";
                                             echo "<p><strong>หมายเหตุ:</strong> " . htmlspecialchars($row['commen']) . "</p>"; // แสดงข้อมูล commen
-                                            echo "<form action='confirm_borrow.php' method='POST'>";
 
-                                            echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
-                                            echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
-                                            for ($i = 0; $i < $row['Brunum']; $i++) {
-                                                echo "<div class='form-group'>";
-                                                echo "<select class='form-control' id='ag_id_$row_number' name='ag_id[]' required>";
-
+                                            if ($st_id == 'ST007') {
+                                                // สถานะรอยืนยันการยืม
+                                                echo "<form action='confirm_borrow.php' method='POST'>";
+                                                echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
+                                                echo "<input type='hidden' name='BrudateRe' value='" . $row['BrudateRe'] . "'>"; // ส่งข้อมูลวันที่คืน
+                                            
+                                                echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
+                                            
+                                                // สร้างรายการตัวเลือกทั้งหมดเพียงครั้งเดียว
                                                 $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
                                                 $items_result = $conn->query($sql_items);
+                                                $items_options = [];
                                                 if ($items_result->num_rows > 0) {
                                                     while ($item = $items_result->fetch_assoc()) {
-                                                        echo "<option value='" . $item['ag_id'] . "'>" . $item['ag_name'] . "</option>";
+                                                        $items_options[] = "<option value='" . $item['ag_id'] . "'>" . $item['ag_name'] . "</option>";
+                                                    }
+                                                }
+                                            
+                                                // แสดง dropdown สำหรับแต่ละแถว
+                                                for ($i = 0; $i < $row['Brunum']; $i++) {
+                                                    echo "<div class='form-group'>";
+                                                    echo "<select class='form-control ag-select' name='ag_id[]' required>";
+                                                    echo implode('', $items_options);
+                                                    echo "</select>";
+                                                    echo "</div>";
+                                                }
+                                            
+                                                echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
+                                                echo "</form>";
+                                            }elseif ($st_id == 'ST002' || $st_id == 'ST005') {
+                                                // สถานะยืมใช้งานอยู่
+                                                echo "<form action='update_borrow.php' method='POST'>";
+                                                echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
+                                                echo "<label for='ag_id_$row_number'>อุปกรณ์ที่ยืม</label>";
+
+                                                $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND (ag_status = 'ST002' OR ag_status = 'ST005') AND BruID = '" . $row['BruID'] . "'";
+                                                $items_result = $conn->query($sql_items);
+
+                                                if ($items_result->num_rows > 0) {
+                                                    while ($item = $items_result->fetch_assoc()) {
+                                                        echo "<div class='form-group'>";
+                                                        // แสดงชื่ออุปกรณ์โดยตรง
+                                                        echo "<p>" . htmlspecialchars($item['ag_name']) . "</p>";
+                                                        echo "<input type='hidden' name='ag_id[]' value='" . $item['ag_id'] . "'>";
+                                                        echo "</div>";
                                                     }
                                                 }
 
-                                                echo "</select>";
-                                                echo "</div>";
+                                                echo "<button type='submit' class='btn btn-primary'>บันทึกการเปลี่ยนแปลง</button>";
+                                                echo "</form>";
+                                            } elseif ($st_id == 'ST006') {
+                                                // สถานะรอยืนยันการคืน
+                                                echo "<form action='confirm_return.php' method='POST'>";
+                                                echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
+                                                echo "<label for='ag_id_$row_number'>อุปกรณ์ที่แจ้งคืน</label>";
+                                                for ($i = 0; $i < $row['Brunum']; $i++) {
+                                                    echo "<div class='form-group'>";
+                                                    echo "<select class='form-control' id='ag_id_$row_number' name='ag_id[]' required>";
+
+                                                    $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST006' AND BruID = '" . $row['BruID'] . "'";
+                                                    $items_result = $conn->query($sql_items);
+
+                                                    if ($items_result->num_rows > 0) {
+                                                        while ($item = $items_result->fetch_assoc()) {
+                                                            echo "<div class='form-group'>";
+                                                            // แสดงชื่ออุปกรณ์โดยตรง
+                                                            echo "<p>" . htmlspecialchars($item['ag_name']) . "</p>";
+                                                            echo "<input type='hidden' name='ag_id[]' value='" . $item['ag_id'] . "'>";
+                                                            echo "</div>";
+                                                        }
+                                                    }
+
+                                                    echo "</select>";
+                                                    echo "</div>";
+                                                }
+                                                echo "<button type='submit' class='btn btn-primary'>ยืนยันการคืน</button>";
+                                                echo "<button type='button' class='btn btn-danger' onclick='confirmReturnAll(" . $row['BruID'] . ")'>ยืนยันการคืนทั้งหมด</button>";
+                                                echo "</form>";
                                             }
-                                            echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
-                                            echo "</form>";
+
                                             echo "</td>";
                                             echo "</tr>";
 
@@ -234,6 +297,7 @@ $u_id = $_SESSION['u_id'];
                                         echo "<tr><td colspan='8'>No records found</td></tr>";
                                     }
                                     ?>
+
                                 </tbody>
                             </table>
                         </div>
@@ -282,6 +346,34 @@ $u_id = $_SESSION['u_id'];
                     detailsRow.style.display = 'none';
                 }
             }
+            document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('.ag-select');
+
+    selects.forEach((select, index) => {
+        select.addEventListener('change', function() {
+            // เก็บค่าอุปกรณ์ที่เลือกไว้ในแถวนี้
+            const selectedValues = [];
+            selects.forEach((sel) => {
+                if (sel.value) {
+                    selectedValues.push(sel.value);
+                }
+            });
+
+            // กรองตัวเลือกใน select ของแถวถัดไป
+            selects.forEach((sel, idx) => {
+                if (idx > index) {
+                    sel.querySelectorAll('option').forEach((option) => {
+                        if (selectedValues.includes(option.value)) {
+                            option.style.display = 'none';
+                        } else {
+                            option.style.display = '';
+                        }
+                    });
+                }
+            });
+        });
+    });
+});
         </script>
 </body>
 
