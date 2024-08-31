@@ -288,7 +288,48 @@ $u_id = $_SESSION['u_id'];
                                                 }
 
                                                 echo "</form>";
+                                            }elseif ($row['st_id'] == 'ST009') {
+                                                echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
+                                                echo "<label for='ag_id_$row_number'>ประวัติอุปกรณ์ที่รับคืน</label>";
+                                            
+                                                // ดึงข้อมูลจากตาราง borrohistory ที่ BruID ตรงกัน และ JOIN กับ statuslist เพื่อดึง st_name
+                                                $sql_history = "
+                                                    SELECT bh.b_items, sl.st_name 
+                                                    FROM borrohistory bh 
+                                                    JOIN statuslist sl ON bh.b_status = sl.st_id 
+                                                    WHERE bh.BruID = ?";
+                                                $stmt_history = $conn->prepare($sql_history);
+                                                $stmt_history->bind_param('s', $row['BruID']);
+                                                $stmt_history->execute();
+                                                $history_result = $stmt_history->get_result();
+                                            
+                                                if ($history_result->num_rows > 0) {
+                                                    while ($history = $history_result->fetch_assoc()) {
+                                                        // ดึงชื่ออุปกรณ์จากตาราง items_1 โดยใช้ ag_id ที่ตรงกับ b_items
+                                                        $sql_item_name = "SELECT ag_name FROM items_1 WHERE ag_id = ?";
+                                                        $stmt_item_name = $conn->prepare($sql_item_name);
+                                                        $stmt_item_name->bind_param('s', $history['b_items']);
+                                                        $stmt_item_name->execute();
+                                                        $item_result = $stmt_item_name->get_result();
+                                            
+                                                        if ($item_result->num_rows > 0) {
+                                                            $item = $item_result->fetch_assoc();
+                                            
+                                                            echo "<div class='form-group' style='display: flex; align-items: center; justify-content: space-between;'>";
+                                                            echo "<p style='margin-right: 10px;'>ชื่ออุปกรณ์: " . htmlspecialchars($item['ag_name']) . "</p>";
+                                                            echo "<p style='margin-right: 10px;'>สถานะ: " . htmlspecialchars($history['st_name']) . "</p>";
+                                                            echo "</div>";
+                                                        }
+                                                    }
+                                                } else {
+                                                    echo "<p>ไม่มีประวัติการคืนอุปกรณ์.</p>";
+                                                }
+                                            
+                                                echo "</form>";
                                             }
+                                            
+
+
 
 
 
@@ -401,7 +442,7 @@ $u_id = $_SESSION['u_id'];
                 // เมื่อ request สำเร็จ
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === 4 && xhr.status === 200) {
-                        console.log(xhr.responseText);  // เพิ่มการตรวจสอบนี้
+                        console.log(xhr.responseText); // เพิ่มการตรวจสอบนี้
                         // เปลี่ยนปุ่มเป็นสถานะคืนอุปกรณ์แล้ว
                         var button = document.getElementById('return-item-' + ag_id);
                         button.innerText = 'คืนอุปกรณ์แล้ว';
@@ -414,7 +455,6 @@ $u_id = $_SESSION['u_id'];
                 // ส่ง ag_id ไปที่เซิร์ฟเวอร์
                 xhr.send("ag_id=" + ag_id + "&action=confirm_return");
             }
-            
         </script>
 </body>
 
