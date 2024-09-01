@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Aug 18, 2024 at 08:33 AM
+-- Generation Time: Sep 01, 2024 at 09:01 AM
 -- Server version: 8.2.0
 -- PHP Version: 8.2.13
 
@@ -24,49 +24,31 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `borrowing`
+-- Table structure for table `borrohistory`
 --
 
-DROP TABLE IF EXISTS `borrowing`;
-CREATE TABLE IF NOT EXISTS `borrowing` (
+DROP TABLE IF EXISTS `borrohistory`;
+CREATE TABLE IF NOT EXISTS `borrohistory` (
   `b_id` int NOT NULL AUTO_INCREMENT,
-  `b_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `b_date` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `b_borower` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `b_items` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `b_date` date NOT NULL,
+  `b_user` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `b_return_p` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `b_agency` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `b_status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `b_return` timestamp NULL DEFAULT NULL,
+  `b_return` date DEFAULT NULL,
+  `BruID` int NOT NULL,
   PRIMARY KEY (`b_id`),
-  KEY `b_name` (`b_name`),
+  KEY `b_name` (`b_items`),
   KEY `b_agency` (`b_agency`)
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `borrowing`
+-- Dumping data for table `borrohistory`
 --
 
-INSERT INTO `borrowing` (`b_id`, `b_name`, `b_date`, `b_borower`, `b_return_p`, `b_agency`, `b_status`, `b_return`) VALUES
-(1, 'MCNXCV182696518', '2024-08-14T07:15', 'U002', 'U003', '1017', 'ST009', '2024-08-28 00:15:00'),
-(2, 'MCNXCV182696518', '2024-08-14T07:36', 'U002', 'U003', '1017', 'ST009', '0000-00-00 00:00:00'),
-(3, 'MCNXCV182725515', '2024-08-22T07:51', 'U002', 'U003', '1017', 'ST009', '0000-00-00 00:00:00'),
-(4, 'MCNXCV18271251C', '2024-08-14T07:57', 'U002', 'U003', '1017', 'ST009', '2024-08-22 00:57:00'),
-(5, '7753', '2024-08-15T07:59', 'U002', 'U003', '1017', 'ST009', '0000-00-00 00:00:00'),
-(6, '7753', '2024-04-06 02:04:00', 'U002', 'U003', '1018', 'ST009', '2024-04-19 07:30:14'),
-(7, '1564', '2024-08-15T07:59', 'U002', 'U003', '1017', 'ST009', '0000-00-00 00:00:00'),
-(8, '1564', '2024-08-22T08:03', 'U002', '', '1017', 'ST009', '2024-08-14 17:00:00'),
-(9, '51321', '2024-08-21T08:05', 'U002', '', '1017', 'ST002', NULL),
-(10, '1564', '2024-09-05T12:17', 'U002', '', '1017', 'ST007', NULL),
-(11, '7753', '2024-08-08T12:29', 'U002', '', '1017', 'ST007', NULL),
-(12, 'MCNXCV182699516', '2024-08-02T12:30', 'U002', '', '1017', 'ST007', NULL),
-(13, 'MCNXCV182706518', '2024-08-01T12:32', 'U002', '', '1017', 'ST007', NULL),
-(14, 'MCNXCV182696518', '2024-07-15T12:32', 'U002', '', '1017', 'ST007', NULL),
-(15, '089', '2024-08-13T13:20', 'U002', '', '1017', 'ST005', '2024-08-30 17:00:00'),
-(41, 'MCNXCV182699516', '2024-08-09T21:40', 'U002', 'U003', '1017', 'ST009', '0000-00-00 00:00:00'),
-(42, 'MCNXCV182706518', '2024-08-09T21:44', 'U002', 'U002', '1017', 'ST009', '0000-00-00 00:00:00'),
-(43, 'MCNXCV182699516', '2024-08-09T21:48', 'U002', 'U003', '1017', 'ST009', '2024-08-09 14:48:00'),
-(44, 'MCNXCV182699516', '2024-08-10T21:53', 'U002', 'U003', '1017', 'ST009', '0000-00-00 00:00:00'),
-(45, 'MCNXCV182710511', '2024-08-13T07:15', 'U002', 'U003', '1017', 'ST009', '2024-08-27 00:15:00');
+INSERT INTO `borrohistory` (`b_id`, `b_items`, `b_date`, `b_user`, `b_return_p`, `b_agency`, `b_status`, `b_return`, `BruID`) VALUES
+(84, '0089000', '2024-09-01', 'U002', NULL, '1017', 'ST002', '0000-00-00', 2);
 
 -- --------------------------------------------------------
 
@@ -77,14 +59,24 @@ INSERT INTO `borrowing` (`b_id`, `b_name`, `b_date`, `b_borower`, `b_return_p`, 
 DROP TABLE IF EXISTS `borroww`;
 CREATE TABLE IF NOT EXISTS `borroww` (
   `BruID` int NOT NULL AUTO_INCREMENT,
-  `Brufname` varchar(10) NOT NULL,
-  `BruTypeE` varchar(5) NOT NULL,
+  `u_id` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type_id` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `Brunum` int NOT NULL,
   `BrudateB` date NOT NULL,
-  `BrudateRe` date NOT NULL,
-  `u_office` int NOT NULL,
+  `BrudateRe` date DEFAULT NULL,
+  `number` int NOT NULL,
+  `st_id` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `commen` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`BruID`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `borroww`
+--
+
+INSERT INTO `borroww` (`BruID`, `u_id`, `type_id`, `Brunum`, `BrudateB`, `BrudateRe`, `number`, `st_id`, `commen`) VALUES
+(2, 'U002', 'T001', 1, '2024-09-01', '0000-00-00', 1017, 'ST002', ''),
+(1, 'U001', 'T001', 1, '0000-00-00', '0000-00-00', 0, 'ST007', '');
 
 -- --------------------------------------------------------
 
@@ -96,8 +88,9 @@ DROP TABLE IF EXISTS `items_1`;
 CREATE TABLE IF NOT EXISTS `items_1` (
   `ag_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `ag_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ag_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ag_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ag_status` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `BruID` int NOT NULL,
   PRIMARY KEY (`ag_id`),
   KEY `ag_status` (`ag_status`),
   KEY `ag_type` (`ag_type`)
@@ -107,44 +100,49 @@ CREATE TABLE IF NOT EXISTS `items_1` (
 -- Dumping data for table `items_1`
 --
 
-INSERT INTO `items_1` (`ag_id`, `ag_type`, `ag_name`, `ag_status`) VALUES
-('089', 'T002', NULL, 'ST005'),
-('111111', 'T003', 'sc02', 'ST004'),
-('123456', 'T003', 'sc01', 'ST004'),
-('1564', 'T003', 'SC03', 'ST007'),
-('51321', 'T003', NULL, 'ST002'),
-('7753', 'T002', 'ph1', 'ST007'),
-('7754', 'T002', 'pn2', 'ST001'),
-('MCNXCV182696518', 'T001', 'NB01', 'ST007'),
-('MCNXCV182699516', 'T001', 'NB02', 'ST007'),
-('MCNXCV182706518', 'T001', 'NB03', 'ST007'),
-('MCNXCV182710511', 'T001', 'NB04', 'ST001'),
-('MCNXCV18271251C', 'T001', 'NB05', 'ST001'),
-('MCNXCV18271451D', 'T001', 'NB06', 'ST001'),
-('MCNXCV182725515', 'T001', 'NB07', 'ST001'),
-('MCNXCV182729514', 'T001', 'NB08', 'ST004'),
-('MCNXCV18273851C', 'T001', 'NB09', 'ST001'),
-('MCNXCV18274651B', 'T001', 'NB10', 'ST001'),
-('MCNXCV21409352A', 'T001', 'NB11', 'ST001'),
-('MCNXCV214095523', 'T001', 'NB12', 'ST001'),
-('MCNXCV214098528', 'T001', 'NB13', 'ST001'),
-('MCNXCV21410252G', 'T001', 'NB14', 'ST001'),
-('MCNXCV214103520', 'T001', 'NB15', 'ST001'),
-('MCNXCV214107523', 'T001', 'NB16', 'ST001'),
-('MCNXCV21410852B', 'T001', 'NB17', 'ST001'),
-('MCNXCV214110524', 'T001', 'NB18', 'ST001'),
-('MCNXCV21411152B', 'T001', 'NB19', 'ST001'),
-('MCNXCV214112529', 'T001', 'NB20', 'ST001'),
-('MCNXCV214113524', 'T001', 'NB21', 'ST001'),
-('MCNXCV214114520', 'T001', 'NB22', 'ST001'),
-('MCNXCV214115524', 'T001', 'NB23', 'ST001'),
-('MCNXCV21411852C', 'T001', 'NB24', 'ST001'),
-('MCNXCV21412152A', 'T001', 'NB25', 'ST001'),
-('MCNXCV21412352A', 'T001', 'NB26', 'ST001'),
-('MCNXCV214124529', 'T001', 'NB27', 'ST001'),
-('MCNXCV214125526', 'T001', 'NB28', 'ST001'),
-('MCNXCV214127528', 'T001', 'NB29', 'ST001'),
-('MCNXCV21412852B', 'T001', 'NB30', 'ST001');
+INSERT INTO `items_1` (`ag_id`, `ag_type`, `ag_name`, `ag_status`, `BruID`) VALUES
+('0089', 'T002', 'Ph04', 'ST001', 34),
+('00890', 'T002', 'Ph03', 'ST001', 42),
+('008900', 'T002', 'Ph05', 'ST001', 33),
+('0089000', 'T001', 'NB000', 'ST002', 2),
+('089', 'T002', 'PH', 'ST001', 25),
+('111111', 'T003', 'sc02', 'ST001', 30),
+('123456', 'T003', 'sc01', 'ST001', 29),
+('1564', 'T003', 'SC04', 'ST001', 30),
+('51321', 'T003', 'sc03', 'ST001', 29),
+('5555632', 'T002', 'PH02', 'ST001', 33),
+('7753', 'T002', 'ph1', 'ST001', 0),
+('7754', 'T002', 'pn2', 'ST001', 0),
+('MCNXCV182696518', 'T001', 'NB01', 'ST001', 32),
+('MCNXCV182699516', 'T001', 'NB02', 'ST001', 38),
+('MCNXCV182706518', 'T001', 'NB03', 'ST001', 39),
+('MCNXCV182710511', 'T001', 'NB04', 'ST001', 40),
+('MCNXCV18271251C', 'T001', 'NB05', 'ST001', 41),
+('MCNXCV18271451D', 'T001', 'NB06', 'ST001', 43),
+('MCNXCV182725515', 'T001', 'NB07', 'ST001', 28),
+('MCNXCV182729514', 'T001', 'NB08', 'ST001', 44),
+('MCNXCV18273851C', 'T001', 'NB09', 'ST001', 45),
+('MCNXCV18274651B', 'T001', 'NB10', 'ST001', 37),
+('MCNXCV21409352A', 'T001', 'NB11', 'ST001', 27),
+('MCNXCV214095523', 'T001', 'NB12', 'ST001', 0),
+('MCNXCV214098528', 'T001', 'NB13', 'ST001', 0),
+('MCNXCV21410252G', 'T001', 'NB14', 'ST001', 0),
+('MCNXCV214103520', 'T001', 'NB15', 'ST001', 0),
+('MCNXCV214107523', 'T001', 'NB16', 'ST001', 0),
+('MCNXCV21410852B', 'T001', 'NB17', 'ST001', 0),
+('MCNXCV214110524', 'T001', 'NB18', 'ST001', 0),
+('MCNXCV21411152B', 'T001', 'NB19', 'ST001', 0),
+('MCNXCV214112529', 'T001', 'NB20', 'ST001', 0),
+('MCNXCV214113524', 'T001', 'NB21', 'ST001', 31),
+('MCNXCV214114520', 'T001', 'NB22', 'ST001', 0),
+('MCNXCV214115524', 'T001', 'NB23', 'ST001', 32),
+('MCNXCV21411852C', 'T001', 'NB24', 'ST001', 0),
+('MCNXCV21412152A', 'T001', 'NB25', 'ST001', 0),
+('MCNXCV21412352A', 'T001', 'NB26', 'ST001', 40),
+('MCNXCV214124529', 'T001', 'NB27', 'ST001', 0),
+('MCNXCV214125526', 'T001', 'NB28', 'ST001', 0),
+('MCNXCV214127528', 'T001', 'NB29', 'ST001', 0),
+('MCNXCV21412852B', 'T001', 'NB30', 'ST001', 0);
 
 -- --------------------------------------------------------
 
@@ -155,8 +153,8 @@ INSERT INTO `items_1` (`ag_id`, `ag_type`, `ag_name`, `ag_status`) VALUES
 DROP TABLE IF EXISTS `item_type`;
 CREATE TABLE IF NOT EXISTS `item_type` (
   `type_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type_description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type_description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`type_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -169,7 +167,9 @@ INSERT INTO `item_type` (`type_id`, `type_name`, `type_description`) VALUES
 ('T002', 'phone', 'phone'),
 ('T003', 'screen', 'screen'),
 ('T004', 'อุปกรณ์', 'อุปกรณ์'),
-('T005', 'เครื่องมือ', 'เครื่องมือ');
+('T005', 'เครื่องมือ', 'เครื่องมือ'),
+('T006', 'อุปกรณ์1', 'อออ'),
+('T007', 'อุปกรณ์2', 'v6xdiI');
 
 -- --------------------------------------------------------
 
@@ -747,11 +747,11 @@ INSERT INTO `u_status` (`u_status_id`, `u_status_name`) VALUES
 --
 
 --
--- Constraints for table `borrowing`
+-- Constraints for table `borrohistory`
 --
-ALTER TABLE `borrowing`
-  ADD CONSTRAINT `borrowing_ibfk_1` FOREIGN KEY (`b_name`) REFERENCES `items_1` (`ag_id`),
-  ADD CONSTRAINT `borrowing_ibfk_2` FOREIGN KEY (`b_agency`) REFERENCES `office` (`number`);
+ALTER TABLE `borrohistory`
+  ADD CONSTRAINT `borrohistory_ibfk_1` FOREIGN KEY (`b_items`) REFERENCES `items_1` (`ag_id`),
+  ADD CONSTRAINT `borrohistory_ibfk_2` FOREIGN KEY (`b_agency`) REFERENCES `office` (`number`);
 
 --
 -- Constraints for table `items_1`
