@@ -8,13 +8,13 @@ if (!$conn) {
 }
 
 // สถิติการยืม
-$sqlBorrowingStats = "SELECT COUNT(*) AS total_borrowed FROM borrowing";
+$sqlBorrowingStats = "SELECT COUNT(*) AS total_borrowed FROM borroww";
 $resultBorrowingStats = $conn->query($sqlBorrowingStats);
 $borrowingStats = $resultBorrowingStats->fetch_assoc();
 $totalBorrowed = $borrowingStats['total_borrowed'];
 
 // สถิติการคืน
-$sqlReturnStats = "SELECT COUNT(*) AS total_returned FROM borrowing WHERE b_status = 'ST009'";
+$sqlReturnStats = "SELECT COUNT(*) AS total_returned FROM borroww WHERE st_id = 'ST009'";
 $resultReturnStats = $conn->query($sqlReturnStats);
 $returnStats = $resultReturnStats->fetch_assoc();
 $totalReturned = $returnStats['total_returned'];
