@@ -15,6 +15,11 @@ $fname = $_SESSION['u_fname'];
 $lname = $_SESSION['u_lname'];
 $address = $_SESSION['u_address'];
 $u_id = $_SESSION['u_id'];
+$sql = "SELECT number, Agency FROM office WHERE number = '$address'";
+$result = mysqli_query($conn, $sql);
+$office_data = mysqli_fetch_assoc($result);
+$office_number = $office_data['number'];
+$office_agency = $office_data['Agency'];
 
 ?>
 <!DOCTYPE html>
@@ -60,6 +65,20 @@ $u_id = $_SESSION['u_id'];
         display: none;
         margin-top: 20px;
     }
+
+    .extend-button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
 </style>
 
 <body>
@@ -76,9 +95,10 @@ $u_id = $_SESSION['u_id'];
                 </div>
             </div>
             <div class="col-md-10">
+                <!-- ปุ่มสำหรับเปิดฟอร์ม -->
                 <button type="button" class="btn btn-success" onclick="toggleForm('addItemTypeForm')" style="margin-bottom: 2%;">เพิ่มประเภทอุปกรณ์</button>
-                <!-- ปุ่มสำหรับเปิดฟอร์มเพิ่มอุปกรณ์ -->
                 <button type="button" class="btn btn-success" onclick="toggleForm('addItemForm')" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
+                <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">ขอยืมอุปกรณ์ IT</button>
                 <!-- ฟอร์มเพิ่มประเภทอุปกรณ์ -->
                 <div id="addItemTypeForm">
                     <form action="add_item_type.php" method="POST">
@@ -123,6 +143,71 @@ $u_id = $_SESSION['u_id'];
                         <button type="submit" class="btn btn-primary">บันทึกอุปกรณ์</button>
                     </form>
                 </div>
+                <div id="addborrow">
+                    <form action="getSqlIT.php" method="POST" class="row g-3" id="formdata" style="display: none">
+                        <div class="row">
+                            <hr>
+                            <label id="headline">ข้อมูลผู้ยืม</label>
+                            <hr>
+                            <div class="col-md-4">
+                                <label for="inputname" class="form-label">ชื่อผู้ยืม</label>
+                                <input type="text" class="form-control" name="borname" id="inputname" placeholder="ค้นหาชื่อผู้ยืม">
+                                <ul id="userList" class="list-group"></ul> <!-- รายการค้นหาผู้ยืม -->
+                            </div>
+                            <div class="col-md-4" id="office_b">
+                                <label for="inputtel" class="form-label">เบอร์หน่วยงาน</label>
+                                <input type="text" class="form-control" name="office" id="inputtel" readonly>
+                                <input type="hidden" name="office_hidden" id="office_hidden">
+                            </div>
+                            <hr>
+                            <label id="headline">ข้อมูลอุปกรณ์</label>
+                            <hr>
+                            <div class="col-md-4">
+                                <label for="inputcategory" class="form-label">ประเภทอุปกรณ์</label>
+                                <select id="inputcategory" name="item_type" class="selectpicker s_select w-100" data-live-search="true">
+                                    <option value="">--เลือกประเภทอุปกรณ์--</option>
+                                    <?php
+                                    $sql = "SELECT DISTINCT `type_name`, `type_id` FROM item_type;";
+                                    if ($result = mysqli_query($conn, $sql)) {
+                                        while ($r = mysqli_fetch_assoc($result)) {
+                                    ?>
+                                            <option value="<?php echo $r['type_id'] ?>"><?php echo $r['type_name'] ?></option>
+                                    <?php
+                                        }
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="inputQuantity" class="form-label">จำนวนเครื่อง</label>
+                                <select id="inputQuantity" name="item_quantity" class="form-control" required>
+                                    <option value="">--เลือกจำนวนเครื่อง--</option>
+                                    <!-- Option จะถูกเติมโดย JavaScript -->
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="comment">หมายเหตุ</label>
+                                <input type="text" class="form-control w-100" id="comment" name="comment" maxlength="50" placeholder="ระบุข้อมูลการยืมเพิ่มเติม">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
+                                <br>
+                                <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate" min="<?php echo date('Y-m-d\TH:i'); ?>">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="returnDate" class="form-label" style="margin-top: 1%;">กำหนดวันคืน</label>
+                                <br>
+                                <input type="datetime-local" class="form-control w-100" id="returnDate" name="returnDate">
+                            </div>
+                            <div class="col-md-6"></div>
+                            <input type="hidden" name="st_id" value="ST007">
+                        </div>
+                        <input type="hidden" name="u_id" id="u_id">
+                        <hr>
+                        <input type="submit" class="extend-button" name="submit" value="บันทึกการยืม" id="submid">
+                    </form>
+                </div>
+
                 <br>
                 <div class="col-md-12">
                 </div>
@@ -211,7 +296,7 @@ $u_id = $_SESSION['u_id'];
 
                                             if ($row['st_id'] == 'ST007') {
                                                 // สถานะรอยืนยันการยืม
-                                                echo "<form id='borrowForm' action='confirm_borrow.php' method='POST' onsubmit='return validateForm()'>";
+                                                echo "<form id='borrowForm_$row_number' class='borrow-form' action='confirm_borrow.php' method='POST' onsubmit='return validateForm($row_number)'>";
                                                 echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
                                                 echo "<input type='hidden' name='BrudateRe' value='" . $row['BrudateRe'] . "'>"; // ส่งข้อมูลวันที่คืน
 
@@ -288,10 +373,10 @@ $u_id = $_SESSION['u_id'];
                                                 }
 
                                                 echo "</form>";
-                                            }elseif ($row['st_id'] == 'ST009') {
+                                            } elseif ($row['st_id'] == 'ST009') {
                                                 echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                                 echo "<label for='ag_id_$row_number'>ประวัติอุปกรณ์ที่รับคืน</label>";
-                                            
+
                                                 // ดึงข้อมูลจากตาราง borrohistory ที่ BruID ตรงกัน และ JOIN กับ statuslist เพื่อดึง st_name
                                                 $sql_history = "
                                                     SELECT bh.b_items, sl.st_name 
@@ -302,7 +387,7 @@ $u_id = $_SESSION['u_id'];
                                                 $stmt_history->bind_param('s', $row['BruID']);
                                                 $stmt_history->execute();
                                                 $history_result = $stmt_history->get_result();
-                                            
+
                                                 if ($history_result->num_rows > 0) {
                                                     while ($history = $history_result->fetch_assoc()) {
                                                         // ดึงชื่ออุปกรณ์จากตาราง items_1 โดยใช้ ag_id ที่ตรงกับ b_items
@@ -311,10 +396,10 @@ $u_id = $_SESSION['u_id'];
                                                         $stmt_item_name->bind_param('s', $history['b_items']);
                                                         $stmt_item_name->execute();
                                                         $item_result = $stmt_item_name->get_result();
-                                            
+
                                                         if ($item_result->num_rows > 0) {
                                                             $item = $item_result->fetch_assoc();
-                                            
+
                                                             echo "<div class='form-group' style='display: flex; align-items: center; justify-content: space-between;'>";
                                                             echo "<p style='margin-right: 10px;'>ชื่ออุปกรณ์: " . htmlspecialchars($item['ag_name']) . "</p>";
                                                             echo "<p style='margin-right: 10px;'>สถานะ: " . htmlspecialchars($history['st_name']) . "</p>";
@@ -324,18 +409,9 @@ $u_id = $_SESSION['u_id'];
                                                 } else {
                                                     echo "<p>ไม่มีประวัติการคืนอุปกรณ์.</p>";
                                                 }
-                                            
                                                 echo "</form>";
                                             }
-                                            
-
-
-
-
-
-
                                             echo "</tr>";
-
                                             $row_number++;
                                         }
                                     } else {
@@ -355,6 +431,7 @@ $u_id = $_SESSION['u_id'];
         <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script>
             $(document).ready(function() {
                 $('#itmes_1').DataTable();
@@ -419,8 +496,12 @@ $u_id = $_SESSION['u_id'];
                 });
             });
 
-            function validateForm() {
-                var ag_selects = document.querySelectorAll('.ag-select');
+            function validateForm(rowNumber) {
+                // ดึงฟอร์มที่เฉพาะเจาะจง
+                var form = document.getElementById('borrowForm_' + rowNumber);
+                if (!form) return true; // ไม่มีฟอร์ม ไม่ต้องตรวจสอบ
+
+                var ag_selects = form.querySelectorAll('.ag-select');
                 var selectedValues = [];
                 for (var i = 0; i < ag_selects.length; i++) {
                     var value = ag_selects[i].value;
@@ -432,6 +513,18 @@ $u_id = $_SESSION['u_id'];
                 }
                 return true; // อนุญาตให้ส่งฟอร์มได้
             }
+
+            function toggleDetails(rowNumber) {
+                // Toggle details for the selected row
+                var detailsRow = document.getElementById('details_' + rowNumber);
+                if (detailsRow.style.display === 'none') {
+                    detailsRow.style.display = '';
+                } else {
+                    detailsRow.style.display = 'none';
+                }
+            }
+
+
 
             function returnItem(ag_id) {
                 // สร้าง AJAX request เพื่อส่งข้อมูลไปยังเซิร์ฟเวอร์
@@ -455,6 +548,95 @@ $u_id = $_SESSION['u_id'];
                 // ส่ง ag_id ไปที่เซิร์ฟเวอร์
                 xhr.send("ag_id=" + ag_id + "&action=confirm_return");
             }
+
+            function addborrow() {
+                var form = document.getElementById("formdata");
+                form.style.display = form.style.display === "none" ? "block" : "none";
+            }
+            $(document).ready(function() {
+                // ฟังก์ชันสำหรับค้นหาผู้ยืม
+                $('#inputname').on('keyup', function() {
+                    var query = $(this).val();
+                    if (query != '') {
+                        $.ajax({
+                            url: "fetch_users.php", // ไฟล์ PHP สำหรับดึงข้อมูลผู้ยืม
+                            method: "POST",
+                            data: {
+                                query: query
+                            },
+                            success: function(data) {
+                                $('#userList').fadeIn();
+                                $('#userList').html(data);
+                            }
+                        });
+                    } else {
+                        $('#userList').fadeOut();
+                    }
+                });
+
+                // เลือกผู้ยืมจาก dropdown
+                $(document).on('click', '#userList li', function() {
+                    var fullname = $(this).text();
+                    var user_id = $(this).data('id');
+                    $('#inputname').val(fullname);
+                    $('#u_id').val(user_id);
+                    $('#userList').fadeOut();
+
+                    // ดึงข้อมูลเบอร์หน่วยงานจากฐานข้อมูลเมื่อเลือกผู้ยืม
+                    $.ajax({
+                        url: "fetch_office.php", // ไฟล์ PHP สำหรับดึงข้อมูลเบอร์หน่วยงาน
+                        method: "POST",
+                        data: {
+                            user_id: user_id
+                        },
+                        success: function(data) {
+                            $('#inputtel').val(data.agency + ' ' + data.number);
+                            $('#office_hidden').val(data.number);
+                        },
+                        dataType: 'json'
+                    });
+                });
+
+                // ฟังก์ชันสำหรับเลือกประเภทอุปกรณ์
+                $('#inputcategory').on('change', function() {
+                    var type_id = $(this).val();
+                    if (type_id) {
+                        $.ajax({
+                            url: 'get_quantityIT.php', // ไฟล์ PHP สำหรับดึงข้อมูลจำนวน
+                            type: 'POST',
+                            data: {
+                                type_id: type_id
+                            },
+                            success: function(response) {
+                                $('#inputQuantity').html(response);
+                            }
+                        });
+                    } else {
+                        $('#inputQuantity').html('<option value="">--เลือกจำนวนเครื่อง--</option>');
+                    }
+                });
+
+                // กำหนดวันที่ปัจจุบันให้กับ input ที่มี id 'bordate'
+                var today = new Date().toISOString().split('T')[0];
+                document.getElementById('bordate').setAttribute('min', today);
+
+                $('#bordate').on('change', function() {
+                    var selectedBorrowDate = new Date(this.value).toISOString().slice(0, 16);
+                    document.getElementById("returnDate").min = selectedBorrowDate;
+                });
+            });
+            document.getElementById('formdata').addEventListener('submit', function(event) {
+                // ดึงค่าจากฟิลด์
+                var borname = document.getElementById('inputname').value.trim();
+                var itemType = document.getElementById('inputcategory').value;
+                var itemQuantity = document.getElementById('inputQuantity').value;
+
+                // ตรวจสอบว่ามีการกรอกข้อมูลครบถ้วน
+                if (!borname || !itemType || !itemQuantity) {
+                    alert('กรุณากรอกข้อมูลให้ครบถ้วน: ชื่อผู้ยืม, ประเภทอุปกรณ์, และจำนวนเครื่อง');
+                    event.preventDefault(); // ป้องกันการส่งฟอร์ม
+                }
+            });
         </script>
 </body>
 
