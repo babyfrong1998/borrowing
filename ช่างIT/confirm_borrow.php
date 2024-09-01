@@ -15,20 +15,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ag_ids = $_POST['ag_id'];
         $return_date = $_POST['BrudateRe']; // รับค่าวันที่คืนจากฟอร์ม
 
+        // ดึงข้อมูลจากตาราง borroww เพื่อเก็บค่า BrudateB
+        $sql_borrow_info = "SELECT BrudateB FROM borroww WHERE BruID = ?";
+        $stmt_borrow_info = $conn->prepare($sql_borrow_info);
+        $stmt_borrow_info->bind_param('s', $bru_id);
+        $stmt_borrow_info->execute();
+        $borrow_info_result = $stmt_borrow_info->get_result();
+        $borrow_info = $borrow_info_result->fetch_assoc();
+
+        // ตรวจสอบว่า BrudateB เป็น 0000-00-00 หรือไม่
+        $brudateB = ($borrow_info['BrudateB'] === '0000-00-00') ? date('Y-m-d') : $borrow_info['BrudateB'];
+
         // กำหนดสถานะที่อัพเดทในตาราง borroww
-        if ($return_date != '0000-00-00') {
-            $borrow_status = 'ST005'; // กำหนดสถานะเป็น ST005 หากวันคืนไม่ใช่ 0000-00-00
-        } else {
-            $borrow_status = 'ST002'; // กำหนดสถานะเป็น ST002 หากวันคืนเป็น 0000-00-00
-        }
+        $borrow_status = ($return_date !== '0000-00-00') ? 'ST005' : 'ST002';
 
         // อัพเดทสถานะของการยืมในตาราง borroww
-        $sql_update_borrow = "UPDATE borroww SET st_id = ? WHERE BruID = ?";
+        $sql_update_borrow = "UPDATE borroww SET st_id = ?, BrudateB = ? WHERE BruID = ?";
         $stmt_update_borrow = $conn->prepare($sql_update_borrow);
-        $stmt_update_borrow->bind_param('ss', $borrow_status, $bru_id);
+        $stmt_update_borrow->bind_param('sss', $borrow_status, $brudateB, $bru_id);
         $stmt_update_borrow->execute();
-
-        // ดึงข้อมูลจากตาราง borroww เพื่อเก็บค่า u_id, BrudateB, BrudateRe, และ number
+        // ดึงข้อมูลอีกครั้งหลังจากอัพเดท
         $sql_borrow_info = "SELECT u_id, BrudateB, BrudateRe, number FROM borroww WHERE BruID = ?";
         $stmt_borrow_info = $conn->prepare($sql_borrow_info);
         $stmt_borrow_info->bind_param('s', $bru_id);
@@ -44,37 +50,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_update_items->execute();
 
             // ตรวจสอบว่า BrudateRe เป็น 0000-00-00 หรือไม่ เพื่อตัดสินใจสถานะการบันทึกประวัติ
-            if ($borrow_info['BrudateRe'] != '0000-00-00') {
-                $history_status = 'ST005'; // ถ้า BrudateRe ไม่ใช่ 0000-00-00
-            } else {
-                $history_status = 'ST002'; // ถ้า BrudateRe เป็น 0000-00-00
-            }
+            $history_status = ($borrow_info['BrudateRe'] !== '0000-00-00') ? 'ST005' : 'ST002';
 
             // บันทึกข้อมูลการยืมลงในตาราง borrohistory
             $sql_insert_history = "INSERT INTO borrohistory (BruID, b_items, b_date, b_return, b_user, b_agency, b_status) 
-                                   VALUES (?, ?, ?, ?, ?, ?, ?)";
+                            VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt_insert_history = $conn->prepare($sql_insert_history);
-            $stmt_insert_history->bind_param('sssssss', $bru_id, $ag_id, $borrow_info['BrudateB'], $borrow_info['BrudateRe'], $borrow_info['u_id'], $borrow_info['number'], $history_status);
+            $stmt_insert_history->bind_param('sssssss', $bru_id, $ag_id, $brudateB, $return_date, $borrow_info['u_id'], $borrow_info['number'], $history_status);
             $stmt_insert_history->execute();
         }
 
         // แสดงข้อความแจ้งเตือน
         echo "<script>
-                alert('การยืมอุปกรณ์ได้ถูกยืนยันแล้ว.');
-                window.location.href = 'home_it.php'; // เปลี่ยนไปยังหน้าอื่นถ้าต้องการ
-              </script>";
+         alert('การยืมอุปกรณ์ได้ถูกยืนยันแล้ว.');
+         window.location.href = 'home_it.php'; // เปลี่ยนไปยังหน้าอื่นถ้าต้องการ
+       </script>";
     } else {
         echo "<script>
-                alert('ข้อมูลไม่ครบถ้วน.');
-                window.location.href = 'home_it.php'; // เปลี่ยนไปยังหน้าอื่นถ้าต้องการ
-              </script>";
+         alert('ข้อมูลไม่ครบถ้วน.');
+         window.location.href = 'home_it.php'; // เปลี่ยนไปยังหน้าอื่นถ้าต้องการ
+       </script>";
     }
 } else {
     echo "<script>
-            alert('วิธีการส่งคำขอไม่ถูกต้อง.');
-            window.location.href = 'home_it.php'; // เปลี่ยนไปยังหน้าอื่นถ้าต้องการ
-          </script>";
+     alert('วิธีการส่งคำขอไม่ถูกต้อง.');
+     window.location.href = 'home_it.php'; // เปลี่ยนไปยังหน้าอื่นถ้าต้องการ
+   </script>";
 }
 
 $conn->close();
-?>

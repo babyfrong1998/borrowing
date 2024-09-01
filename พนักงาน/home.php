@@ -263,14 +263,14 @@ $office_agency = $office_data['Agency'];
                                             echo "<form id='return-all-form' action='updateAllStatus.php' method='POST' style='display:none;'>";
                                             echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                             echo "</form>";
-                                        
+
                                             echo "<form action='updateStatus.php' method='POST'>";
                                             echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                             echo "<label for='ag_id_$row_number'>อุปกรณ์ที่ยืม</label>";
-                                        
+
                                             $sql_items = "SELECT ag_id, ag_status FROM items_1 WHERE ag_type = '$type_id' AND BruID = '" . htmlspecialchars($row['BruID']) . "'";
                                             $items_result = $conn->query($sql_items);
-                                        
+
                                             $status_count = 0;
                                             if ($items_result->num_rows > 0) {
                                                 while ($item = $items_result->fetch_assoc()) {
@@ -278,14 +278,14 @@ $office_agency = $office_data['Agency'];
                                                         $status_count++;
                                                     }
                                                 }
-                                        
+
                                                 $items_result->data_seek(0);
-                                        
+
                                                 while ($item = $items_result->fetch_assoc()) {
                                                     echo "<div class='form-group' style='display: flex; align-items: center;'>";
                                                     echo "<p style='flex: 1; margin: 0;'>" . htmlspecialchars($item['ag_id']) . "</p>";
                                                     echo "<input type='hidden' name='ag_id[]' value='" . htmlspecialchars($item['ag_id']) . "'>";
-                                        
+
                                                     if ($item['ag_status'] == 'ST002' || $item['ag_status'] == 'ST005') {
                                                         if ($status_count == 1) {
                                                             echo "<button type='button' id='return-all' class='btn btn-warning' onclick='returnAllItems(\"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนทั้งหมด</button>";
@@ -300,17 +300,17 @@ $office_agency = $office_data['Agency'];
                                             } else {
                                                 echo "<p>ไม่มีอุปกรณ์ที่ยืมอยู่ในสถานะปัจจุบัน</p>";
                                             }
-                                        
+
                                             if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005' || $row['st_id'] == 'ST006') {
                                                 echo "<button type='button' id='return-all' class='btn btn-primary' onclick='returnAllItems(\"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนทั้งหมด</button>";
                                             } else if ($row['st_id'] == 'ST008') {
                                                 echo "<button type='submit' class='btn btn-primary' name='return_all' disabled>แจ้งคืนทั้งหมด</button>";
                                             }
-                                        
+
                                             echo "</form>";
                                         }
-                                        
-                                        
+
+
                                         echo "</td>";
                                         echo "</tr>";
                                         $row_number++;
@@ -345,32 +345,7 @@ $office_agency = $office_data['Agency'];
             var form = document.getElementById("formdata");
             form.style.display = form.style.display === "none" ? "block" : "none";
         }
-        let ch = 0;
-        $(document).ready(function() {
-            $('.s_select').selectpicker();
-            $('#itemstb').dataTable();
-        });
 
-        function addborrow() {
-            var btn = document.getElementById('btnaddbor');
-            var form = document.getElementById('formdata');
-            if (ch == 0) {
-                form.style.display = 'block';
-                ch = 1;
-            } else {
-                form.style.display = 'none';
-                ch = 0;
-            }
-        }
-        document.getElementById('formdata').addEventListener('submit', function(event) {
-            var bordate = document.getElementById('bordate').value;
-            var itemselect = document.getElementById('itemselect').value;
-            // ตรวจสอบข้อมูลในช่อง 'วันที่ยืม' และ 'รหัสครุภัณฑ์'
-            if (!bordate || !itemselect) {
-                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
-                event.preventDefault(); // ป้องกันการส่งฟอร์ม
-            }
-        });
         $(document).ready(function() {
             var today = new Date().toISOString().slice(0, 16);
             document.getElementById("bordate").min = today;
@@ -450,34 +425,7 @@ $office_agency = $office_data['Agency'];
                 detailsRow.style.display = 'none';
             }
         }
-        document.addEventListener('DOMContentLoaded', function() {
-            const selects = document.querySelectorAll('.ag-select');
-
-            selects.forEach((select, index) => {
-                select.addEventListener('change', function() {
-                    // เก็บค่าอุปกรณ์ที่เลือกไว้ในแถวนี้
-                    const selectedValues = [];
-                    selects.forEach((sel) => {
-                        if (sel.value) {
-                            selectedValues.push(sel.value);
-                        }
-                    });
-
-                    // กรองตัวเลือกใน select ของแถวถัดไป
-                    selects.forEach((sel, idx) => {
-                        if (idx > index) {
-                            sel.querySelectorAll('option').forEach((option) => {
-                                if (selectedValues.includes(option.value)) {
-                                    option.style.display = 'none';
-                                } else {
-                                    option.style.display = '';
-                                }
-                            });
-                        }
-                    });
-                });
-            });
-        });
+    
 
         function returnItem(ag_id, BruID) {
             if (confirm("คุณต้องการแจ้งคืนอุปกรณ์นี้หรือไม่?")) {
