@@ -197,7 +197,7 @@ while ($type = $typeResult1->fetch_assoc()) {
                                                             <?php echo ($id == $row['ag_type']) ? 'selected' : ''; ?>>
                                                             <?php echo htmlspecialchars($name); ?>
                                                         </option>
-                                                    <?php } ?>
+                                                    <?php } ?> 
                                                 </select>
                                             </td>
                                             <td>

@@ -91,14 +91,14 @@ $office_agency = $office_data['Agency'];
                         <button type="button" id="menu" class="btn btn-info col-12">ออกจากระบบ</button>
                     </a>
                     <hr>
-                    <button type="button" class="btn btn-info col-12" onclick="window.location.href='manage_items.php'">จัดการประเภทและอุปกรณ์</button>
-                </div>
+                    </div>
             </div>
             <div class="col-md-10">
                 <!-- ปุ่มสำหรับเปิดฟอร์ม -->
                 <button type="button" class="btn btn-success" onclick="toggleForm('addItemTypeForm')" style="margin-bottom: 2%;">เพิ่มประเภทอุปกรณ์</button>
                 <button type="button" class="btn btn-success" onclick="toggleForm('addItemForm')" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
                 <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">ขอยืมอุปกรณ์ IT</button>
+                <button type="button" class="btn btn-success" onclick="window.location.href='manage_items.php'"style="margin-bottom: 2%;" >จัดการประเภทและอุปกรณ์</button>
                 <!-- ฟอร์มเพิ่มประเภทอุปกรณ์ -->
                 <div id="addItemTypeForm">
                     <form action="add_item_type.php" method="POST">
