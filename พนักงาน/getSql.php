@@ -11,7 +11,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $office_number = $_POST['office'];
     $st_id = $_POST['st_id'];
     $comment = isset($_POST['comment']) ? trim($_POST['comment']) : '';
-
+    if ($item_quantity == "0") {
+        $item_quantity = 0; // ถ้าผู้ใช้เลือก "ไม่มีอุปกรณ์ที่พร้อมใช้งาน" ให้ใช้ 0
+    }
     // Get the next BruID
     $sql = "SELECT IFNULL(MAX(BruID), 0) + 1 AS next_id FROM borroww";
     $result = mysqli_query($conn, $sql);

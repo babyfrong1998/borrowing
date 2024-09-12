@@ -91,7 +91,6 @@ $office_agency = $office_data['Agency'];
                         <button type="button" id="menu" class="btn btn-info col-12">ออกจากระบบ</button>
                     </a>
                     <hr>
-                    <button type="button" class="btn btn-info col-12" onclick="window.location.href='manage_items.php'">จัดการประเภทและอุปกรณ์</button>
                 </div>
             </div>
             <div class="col-md-10">
@@ -99,6 +98,7 @@ $office_agency = $office_data['Agency'];
                 <button type="button" class="btn btn-success" onclick="toggleForm('addItemTypeForm')" style="margin-bottom: 2%;">เพิ่มประเภทอุปกรณ์</button>
                 <button type="button" class="btn btn-success" onclick="toggleForm('addItemForm')" style="margin-bottom: 2%;">เพิ่มอุปกรณ์</button>
                 <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">ขอยืมอุปกรณ์ IT</button>
+                <button type="button" class="btn btn-success" onclick="window.location.href='manage_items.php'" style="margin-bottom: 2%;">จัดการประเภทและอุปกรณ์</button>
                 <!-- ฟอร์มเพิ่มประเภทอุปกรณ์ -->
                 <div id="addItemTypeForm">
                     <form action="add_item_type.php" method="POST">
@@ -113,11 +113,11 @@ $office_agency = $office_data['Agency'];
                         <button type="submit" class="btn btn-primary">บันทึกประเภทอุปกรณ์</button>
                     </form>
                 </div>
+                <hr>
                 <!-- ฟอร์มเพิ่มอุปกรณ์ -->
                 <div id="addItemForm">
                     <form action="add_item.php" method="POST">
                         <div class="form-group">
-
                             <label for="ag_type">ประเภท</label>
                             <select class="form-control" id="ag_type" name="ag_type" required>
                                 <?php
@@ -143,6 +143,7 @@ $office_agency = $office_data['Agency'];
                         <button type="submit" class="btn btn-primary">บันทึกอุปกรณ์</button>
                     </form>
                 </div>
+                <hr>
                 <div id="addborrow">
                     <form action="getSqlIT.php" method="POST" class="row g-3" id="formdata" style="display: none">
                         <div class="row">
@@ -185,9 +186,9 @@ $office_agency = $office_data['Agency'];
                                     <!-- Option จะถูกเติมโดย JavaScript -->
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-12">
                                 <label for="comment">หมายเหตุ</label>
-                                <input type="text" class="form-control w-100" id="comment" name="comment" maxlength="50" placeholder="ระบุข้อมูลการยืมเพิ่มเติม">
+                                <textarea class="form-control w-100" id="comment" name="comment" rows="4" maxlength="80" placeholder="ระบุข้อมูลการยืมเพิ่มเติม "></textarea>
                             </div>
                             <div class="col-md-4">
                                 <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
@@ -432,6 +433,7 @@ $office_agency = $office_data['Agency'];
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script>
             $(document).ready(function() {
                 $('#itmes_1').DataTable();
@@ -523,8 +525,6 @@ $office_agency = $office_data['Agency'];
                     detailsRow.style.display = 'none';
                 }
             }
-
-
 
             function returnItem(ag_id) {
                 // สร้าง AJAX request เพื่อส่งข้อมูลไปยังเซิร์ฟเวอร์
@@ -637,6 +637,7 @@ $office_agency = $office_data['Agency'];
                     event.preventDefault(); // ป้องกันการส่งฟอร์ม
                 }
             });
+            
         </script>
 </body>
 

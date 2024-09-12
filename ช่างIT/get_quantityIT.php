@@ -16,7 +16,7 @@ if(isset($_POST['type_id'])) {
             echo "<option value='$i'>$i</option>";
         }
     } else {
-        echo "<option value=''>ไม่มีอุปกรณ์ที่พร้อมใช้งาน</option>";
+        echo "<option value='0'>ไม่มีอุปกรณ์ที่พร้อมใช้งาน</option>";
     }
 }
 ?>
