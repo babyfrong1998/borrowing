@@ -40,9 +40,14 @@ while ($type = $typeResult1->fetch_assoc()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <title>จัดการ อุปกรณ์ IT</title>
-
+    <script>
+        function confirmUpdate() {
+            return confirm('คุณแน่ใจหรือไม่ว่าต้องการทำการอัปเดตข้อมูลนี้?');
+        }
+    </script>
 </head>
 <style>
     h2 {
@@ -130,6 +135,46 @@ while ($type = $typeResult1->fetch_assoc()) {
     .btn:hover {
         opacity: 0.8;
     }
+
+    .filter-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    .filter-container .form-group {
+        margin: 0;
+        flex: 1;
+    }
+
+    .filter-container .form-group label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .filter-container .form-group select {
+        width: 100%;
+    }
+
+    .filter-container .search-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 20px;
+        transition: background-color 0.3s ease;
+    }
+
+    .filter-container .search-button:hover {
+        background-color: #0056b3;
+    }
 </style>
 
 <body>
@@ -162,7 +207,7 @@ while ($type = $typeResult1->fetch_assoc()) {
                                             <td><input type="text" name="type_description" value="<?php echo htmlspecialchars($row['type_description']); ?>" class="form-control"></td>
                                             <td>
                                                 <input type="hidden" name="type_id" value="<?php echo htmlspecialchars($row['type_id']); ?>">
-                                                <button type="submit" class="btn btn-success">Update</button>
+                                                <button type="submit" class="btn btn-success" onclick="return confirmUpdate()">Update</button>
                                                 <a href="delete_type.php?type_id=<?php echo urlencode($row['type_id']); ?>" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                                             </td>
                                         </form>
@@ -170,6 +215,39 @@ while ($type = $typeResult1->fetch_assoc()) {
                                 <?php } ?>
                             </tbody>
                         </table>
+                    </section>
+
+                    <section class="section">
+                        <h2>กรองการแสดงข้อมูล</h2>
+                        <form method="GET" action="manage_items.php">
+                            <div class="filter-container">
+                                <div class="form-group">
+                                    <label for="type_filter">ประเภท:</label>
+                                    <select id="type_filter" name="type_filter" class="form-control">
+                                        <option value="">ทั้งหมด</option>
+                                        <?php foreach ($typeOptions1 as $id => $name) { ?>
+                                            <option value="<?php echo htmlspecialchars($id); ?>" <?php echo (isset($_GET['type_filter']) && $_GET['type_filter'] == $id) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($name); ?>
+                                            </option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="status_filter">สถานะ:</label>
+                                    <select id="status_filter" name="status_filter" class="form-control">
+                                        <option value="">ทั้งหมด</option>
+                                        <?php foreach ($statusOptions as $id => $name) { ?>
+                                            <option value="<?php echo htmlspecialchars($id); ?>" <?php echo (isset($_GET['status_filter']) && $_GET['status_filter'] == $id) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($name); ?>
+                                            </option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                                <button type="submit" class="search-button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
                     </section>
 
                     <section class="section">
@@ -185,7 +263,36 @@ while ($type = $typeResult1->fetch_assoc()) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php while ($row = $itemResult->fetch_assoc()) { ?>
+                                <?php
+                                // รับค่าตัวกรองจาก URL
+                                $type_filter = isset($_GET['type_filter']) ? $_GET['type_filter'] : '';
+                                $status_filter = isset($_GET['status_filter']) ? $_GET['status_filter'] : '';
+
+                                // ปรับ SQL query ตามค่าตัวกรอง
+                                $sql = "SELECT * FROM items_1 WHERE 1=1";
+
+                                if ($type_filter) {
+                                    $sql .= " AND ag_type = ?";
+                                }
+                                if ($status_filter) {
+                                    $sql .= " AND ag_status = ?";
+                                }
+
+                                $stmt = $conn->prepare($sql);
+
+                                // ผูกพารามิเตอร์
+                                if ($type_filter && $status_filter) {
+                                    $stmt->bind_param("ss", $type_filter, $status_filter);
+                                } elseif ($type_filter) {
+                                    $stmt->bind_param("s", $type_filter);
+                                } elseif ($status_filter) {
+                                    $stmt->bind_param("s", $status_filter);
+                                }
+
+                                $stmt->execute();
+                                $itemResult = $stmt->get_result();
+
+                                while ($row = $itemResult->fetch_assoc()) { ?>
                                     <tr>
                                         <form method="POST" action="update_item.php">
                                             <td><?php echo htmlspecialchars($row['ag_id']); ?></td>
@@ -197,7 +304,7 @@ while ($type = $typeResult1->fetch_assoc()) {
                                                             <?php echo ($id == $row['ag_type']) ? 'selected' : ''; ?>>
                                                             <?php echo htmlspecialchars($name); ?>
                                                         </option>
-                                                    <?php } ?> 
+                                                    <?php } ?>
                                                 </select>
                                             </td>
                                             <td>
@@ -212,7 +319,7 @@ while ($type = $typeResult1->fetch_assoc()) {
                                             </td>
                                             <td>
                                                 <input type="hidden" name="ag_id" value="<?php echo htmlspecialchars($row['ag_id']); ?>">
-                                                <button type="submit" class="btn btn-success">Update</button>
+                                                <button type="submit" class="btn btn-success" onclick="return confirmUpdate()">Update</button>
                                                 <a href="delete_item.php?ag_id=<?php echo urlencode($row['ag_id']); ?>" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                                             </td>
                                         </form>

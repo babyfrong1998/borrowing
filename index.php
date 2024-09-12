@@ -47,8 +47,13 @@ if(isset($_SESSION['fname'])&&isset($_SESSION['lname'])){
                             <div class="row justify-content-center align-items-center g-2">
                                 <div class="col-md-12">
                                 <center><h1>ระบบยืมคืนอุปกรณ์ IT</h1></center>
-                                    <center><label for="" style="color:red;"><?php if(isset($_GET['t'])){ echo "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง";}?></label></center>
-                                </div>
+                                <center><label for="" style="color:red;">
+                                        <?php 
+                                        if(isset($_GET['t']) && $_GET['t'] == 1){ 
+                                            echo "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง";
+                                        }
+                                        ?>
+                                    </label></center></div>
                                 <div class="col-md-12">
                                     <label for="">ชื่อผู้เข้าใช้งาน</label>
                                     <input type="text" name="username" class="form-control w-100" placeholder="username">

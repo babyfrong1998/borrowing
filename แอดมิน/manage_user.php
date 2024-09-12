@@ -24,7 +24,92 @@ while ($statusRow = $statusResult->fetch_assoc()) {
     $statusOptions[$statusRow['u_status_id']] = $statusRow['u_status_name'];
 }
 ?>
+<style>
+    h2 {
+        padding-top: 20px;
+        padding-bottom: 20px;
+        text-align: center;
+        width: 100%;
+        background-color: turquoise;
+        font-weight: bold;
+    }
 
+    .btn-back-home {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 1em;
+        min-width: 400px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    table thead tr {
+        background-color: #009879;
+        color: #ffffff;
+        text-align: left;
+        font-weight: bold;
+    }
+
+    table th,
+    table td {
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+    }
+
+    table tbody tr {
+        border-bottom: 1px solid #dddddd;
+    }
+
+    table tbody tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+    }
+
+    table tbody tr:last-of-type {
+        border-bottom: 2px solid #009879;
+    }
+
+    table tbody tr:hover {
+        background-color: #f1f1f1;
+        cursor: pointer;
+    }
+
+    .form-control {
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 100%;
+    }
+
+    .btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn:hover {
+        opacity: 0.8;
+    }
+    </style>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -32,20 +117,26 @@ while ($statusRow = $statusResult->fetch_assoc()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Users</title>
-    <link rel="stylesheet" href="../styles.css"> <!-- ใช้ไฟล์ CSS เดียวกับ home_admin.php -->
+    <link rel="stylesheet" href="../styles.css">
+    <script>
+        function confirmUpdate() {
+            return confirm('คุณแน่ใจหรือไม่ว่าต้องการทำการอัปเดตข้อมูลนี้?');
+        }
+    </script>
 </head>
 
 <body>
     <div class="container">
+   
         <header>
-            <h1>Manage Users</h1>
-            <a href="home_admin.php" class="btn btn-primary">Back to Admin Home</a>
+            <h2>ระบบจัดการผู้ใช้งาน</h2>
+            <a href="home_admin.php" class="btn-back-home">Back to Admin Home</a>
         </header>
-
+        <div class="row">
         <main>
             <!-- แก้ไข/ลบผู้ใช้งาน -->
             <section>
-                <h2>Edit/Delete Users</h2>
+                <h2>จัดการและแก้ไขผู้ใช้งาน</h2>
                 <table class="table">
                     <thead>
                         <tr>
@@ -89,7 +180,7 @@ while ($statusRow = $statusResult->fetch_assoc()) {
                                     </td>
                                     <td>
                                         <input type="hidden" name="u_id" value="<?php echo $row['u_id']; ?>">
-                                        <button type="submit" class="btn btn-success">Update</button>
+                                        <button type="submit" class="btn btn-success"onclick="return confirmUpdate()">Update</button>
                                         <a href="delete_user.php?u_id=<?php echo $row['u_id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                                     </td>
                                 </form>
@@ -101,7 +192,7 @@ while ($statusRow = $statusResult->fetch_assoc()) {
 
             <!-- เพิ่มผู้ใช้งาน -->
             <section>
-                <h2>Add New User</h2>
+                <h2>เพิ่มผู้ใช้งาน</h2>
                 <form method="POST" action="add_user.php">
                     <input type="text" name="u_fname" placeholder="First Name" required class="form-control">
                     <input type="text" name="u_lname" placeholder="Last Name" required class="form-control">
@@ -127,6 +218,7 @@ while ($statusRow = $statusResult->fetch_assoc()) {
                     <button type="submit" class="btn btn-primary">Add User</button>
                 </form>
             </section>
+             </div>
         </main>
     </div>
 </body>

@@ -161,9 +161,10 @@ $office_agency = $office_data['Agency'];
                                 <!-- Option จะถูกเติมโดย JavaScript -->
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <hr>
+                        <div class="col-md-12">
                             <label for="comment">หมายเหตุ</label>
-                            <input type="text" class="form-control w-100" id="comment" name="comment" maxlength="50" placeholder="ระบุข้อมูลการยืมเพิ่มเติม">
+                            <textarea class="form-control w-100" id="comment" name="comment" rows="4" maxlength="80" placeholder="ระบุข้อมูลการยืมเพิ่มเติม "></textarea>
                         </div>
                         <div class="col-md-4">
                             <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>

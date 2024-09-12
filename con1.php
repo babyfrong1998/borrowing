@@ -42,8 +42,8 @@ if(isset($_POST['username']) && isset($_POST['password'])){
                 echo "Invalid status.";
             }
         } else {
-            // ถ้าไม่มีผลลัพธ์จากคำสั่ง SQL (ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง)
-            echo "Invalid username or password.";
+            header("Location: index.php?t=1");
+            exit();
         }
     } else {
         echo "Error: " . mysqli_error($conn);
