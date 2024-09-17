@@ -37,6 +37,14 @@ if(isset($_POST['username']) && isset($_POST['password'])){
                 
                 header("Location: แอดมิน/home_admin.php");
                 exit();
+            }elseif($u_status_id == 4){
+                $_SESSION['username'] = $row['u_username'];
+                $_SESSION['u_fname'] = $row['u_fname'];
+                $_SESSION['u_lname'] = $row['u_lname'];
+                $_SESSION['u_address'] = $row['u_address'];
+                $_SESSION['u_id'] = $row['u_id']; 
+                header("Location: หัวหน้าพนักงาน/home_h.php");
+                exit();
             } else {
                 // กรณีที่ไม่มีสถานะที่ตรงกัน
                 echo "Invalid status.";
