@@ -43,6 +43,7 @@ while ($statusRow = $statusResult->fetch_assoc()) {
         border-radius: 5px;
         transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
+
     table {
         width: 100%;
         border-collapse: collapse;
@@ -52,25 +53,10 @@ while ($statusRow = $statusResult->fetch_assoc()) {
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     }
 
-    table thead tr {
-        background-color: #009879;
-        color: #ffffff;
-        text-align: left;
-        font-weight: bold;
-    }
-
     table th,
     table td {
         padding: 12px 15px;
         border: 1px solid #ddd;
-    }
-
-    table tbody tr {
-        border-bottom: 1px solid #dddddd;
-    }
-
-    table tbody tr:nth-of-type(even) {
-        background-color: #f3f3f3;
     }
 
     table tbody tr:last-of-type {
@@ -78,7 +64,7 @@ while ($statusRow = $statusResult->fetch_assoc()) {
     }
 
     table tbody tr:hover {
-        background-color: #f1f1f1;
+        background-color: #0C71F6FF;
         cursor: pointer;
     }
 
@@ -106,10 +92,7 @@ while ($statusRow = $statusResult->fetch_assoc()) {
         color: white;
     }
 
-    .btn:hover {
-        opacity: 0.8;
-    }
-    </style>
+</style>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -127,98 +110,97 @@ while ($statusRow = $statusResult->fetch_assoc()) {
 
 <body>
     <div class="container">
-   
         <header>
             <h2>ระบบจัดการผู้ใช้งาน</h2>
             <a href="home_admin.php" class="btn-back-home">Back to Admin Home</a>
         </header>
         <div class="row">
-        <main>
-            <!-- แก้ไข/ลบผู้ใช้งาน -->
-            <section>
-                <h2>จัดการและแก้ไขผู้ใช้งาน</h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Email</th>
-                            <th>Address</th>
-                            <th>Username</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($row = $userResult->fetch_assoc()) { ?>
+            <main>
+                <!-- แก้ไข/ลบผู้ใช้งาน -->
+                <section>
+                    <h2>จัดการและแก้ไขผู้ใช้งาน</h2>
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <form method="POST" action="update_user.php">
-                                    <td><input type="text" name="u_fname" value="<?php echo $row['u_fname']; ?>" class="form-control"></td>
-                                    <td><input type="text" name="u_lname" value="<?php echo $row['u_lname']; ?>" class="form-control"></td>
-                                    <td><input type="email" name="u_email" value="<?php echo $row['u_email']; ?>" class="form-control"></td>
-                                    <td>
-                                        <select name="u_address" class="form-control">
-                                            <?php 
-                                            // รีเซ็ตตัวชี้ผลลัพธ์ของ office
-                                            $officeResult->data_seek(0); 
-                                            while ($officeRow = $officeResult->fetch_assoc()) { ?>
-                                                <option value="<?php echo $officeRow['number']; ?>" <?php if($row['u_address'] == $officeRow['number']) echo 'selected'; ?>>
-                                                    <?php echo $officeRow['number'] . " - " . $officeRow['Agency']; ?>
-                                                </option>
-                                            <?php } ?>
-                                        </select>
-                                    </td>
-                                    <td><input type="text" name="u_username" value="<?php echo $row['u_username']; ?>" class="form-control"></td>
-                                    <td>
-                                        <select name="u_status_id" class="form-control">
-                                            <?php foreach ($statusOptions as $statusId => $statusName) { ?>
-                                                <option value="<?php echo $statusId; ?>" <?php if ($row['u_status_id'] == $statusId) echo 'selected'; ?>>
-                                                    <?php echo $statusName; ?>
-                                                </option>
-                                            <?php } ?>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input type="hidden" name="u_id" value="<?php echo $row['u_id']; ?>">
-                                        <button type="submit" class="btn btn-success"onclick="return confirmUpdate()">Update</button>
-                                        <a href="delete_user.php?u_id=<?php echo $row['u_id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
-                                    </td>
-                                </form>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Email</th>
+                                <th>Address</th>
+                                <th>Username</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
-            </section>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = $userResult->fetch_assoc()) { ?>
+                                <tr>
+                                    <form method="POST" action="update_user.php">
+                                        <td><input type="text" name="u_fname" value="<?php echo $row['u_fname']; ?>" class="form-control"></td>
+                                        <td><input type="text" name="u_lname" value="<?php echo $row['u_lname']; ?>" class="form-control"></td>
+                                        <td><input type="email" name="u_email" value="<?php echo $row['u_email']; ?>" class="form-control"></td>
+                                        <td>
+                                            <select name="u_address" class="form-control">
+                                                <?php
+                                                // รีเซ็ตตัวชี้ผลลัพธ์ของ office
+                                                $officeResult->data_seek(0);
+                                                while ($officeRow = $officeResult->fetch_assoc()) { ?>
+                                                    <option value="<?php echo $officeRow['number']; ?>" <?php if ($row['u_address'] == $officeRow['number']) echo 'selected'; ?>>
+                                                        <?php echo $officeRow['number'] . " - " . $officeRow['Agency']; ?>
+                                                    </option>
+                                                <?php } ?>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" name="u_username" value="<?php echo $row['u_username']; ?>" class="form-control"></td>
+                                        <td>
+                                            <select name="u_status_id" class="form-control">
+                                                <?php foreach ($statusOptions as $statusId => $statusName) { ?>
+                                                    <option value="<?php echo $statusId; ?>" <?php if ($row['u_status_id'] == $statusId) echo 'selected'; ?>>
+                                                        <?php echo $statusName; ?>
+                                                    </option>
+                                                <?php } ?>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="hidden" name="u_id" value="<?php echo $row['u_id']; ?>">
+                                            <button type="submit" class="btn btn-success" onclick="return confirmUpdate()">Update</button>
+                                            <a href="delete_user.php?u_id=<?php echo $row['u_id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                        </td>
+                                    </form>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </section>
 
-            <!-- เพิ่มผู้ใช้งาน -->
-            <section>
-                <h2>เพิ่มผู้ใช้งาน</h2>
-                <form method="POST" action="add_user.php">
-                    <input type="text" name="u_fname" placeholder="First Name" required class="form-control">
-                    <input type="text" name="u_lname" placeholder="Last Name" required class="form-control">
-                    <input type="email" name="u_email" placeholder="Email" required class="form-control">
-                    <select name="u_address" required class="form-control">
-                        <option value="" disabled selected>Select Address</option>
-                        <?php
-                        // รีเซ็ตตัวชี้ผลลัพธ์ของ office
-                        $officeResult->data_seek(0); 
-                        while ($officeRow = $officeResult->fetch_assoc()) { ?>
-                            <option value="<?php echo $officeRow['number']; ?>">
-                                <?php echo $officeRow['number'] . " - " . $officeRow['Agency']; ?>
-                            </option>
-                        <?php } ?>
-                    </select>
-                    <input type="text" name="u_username" placeholder="Username" required class="form-control">
-                    <input type="password" name="u_password" placeholder="Password" required class="form-control">
-                    <select name="u_status_id" required class="form-control">
-                        <?php foreach ($statusOptions as $statusId => $statusName) { ?>
-                            <option value="<?php echo $statusId; ?>"><?php echo $statusName; ?></option>
-                        <?php } ?>
-                    </select>
-                    <button type="submit" class="btn btn-primary">Add User</button>
-                </form>
-            </section>
-             </div>
+                <!-- เพิ่มผู้ใช้งาน -->
+                <section>
+                    <h2>เพิ่มผู้ใช้งาน</h2>
+                    <form method="POST" action="add_user.php">
+                        <input type="text" name="u_fname" placeholder="First Name" required class="form-control">
+                        <input type="text" name="u_lname" placeholder="Last Name" required class="form-control">
+                        <input type="email" name="u_email" placeholder="Email" required class="form-control">
+                        <select name="u_address" required class="form-control">
+                            <option value="" disabled selected>Select Address</option>
+                            <?php
+                            // รีเซ็ตตัวชี้ผลลัพธ์ของ office
+                            $officeResult->data_seek(0);
+                            while ($officeRow = $officeResult->fetch_assoc()) { ?>
+                                <option value="<?php echo $officeRow['number']; ?>">
+                                    <?php echo $officeRow['number'] . " - " . $officeRow['Agency']; ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                        <input type="text" name="u_username" placeholder="Username" required class="form-control">
+                        <input type="password" name="u_password" placeholder="Password" required class="form-control">
+                        <select name="u_status_id" required class="form-control">
+                            <?php foreach ($statusOptions as $statusId => $statusName) { ?>
+                                <option value="<?php echo $statusId; ?>"><?php echo $statusName; ?></option>
+                            <?php } ?>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Add User</button>
+                    </form>
+                </section>
+        </div>
         </main>
     </div>
 </body>

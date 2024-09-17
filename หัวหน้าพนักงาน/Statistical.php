@@ -168,7 +168,7 @@ $conn->close();
     <div class="container">
         <header>
             <h1>IT Equipment Statistics</h1>
-            <a href="home_admin.php" class="btn-back-home">Back to Admin Home</a>
+            <a href="home_h.php" class="btn-back-home">Back to Home</a>
         </header>
         <!-- ส่วนบนแบ่งเป็น ซ้าย-ขวา -->
         <div class="top-section">
