@@ -1,22 +1,19 @@
 <?php
 session_start();
 include "../connect.php";
-
-// ตรวจสอบการเชื่อมต่อกับฐานข้อมูล
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-}
-
+// ดึงข้อมูลผู้ใช้จาก Session
+$fname = $_SESSION['u_fname'];
+$lname = $_SESSION['u_lname'];
+$address = $_SESSION['u_address'];
+$u_id = $_SESSION['u_id'];
 // ดึงข้อมูลประเภทของอุปกรณ์และจำนวน
 $sqlTypeStats = "SELECT it.type_name, COUNT(i.ag_type) AS type_count 
                  FROM items_1 i 
                  JOIN item_type it ON i.ag_type = it.type_id 
                  GROUP BY it.type_name";
 $resultTypeStats = $conn->query($sqlTypeStats);
-
 $types = [];
 $typeCounts = [];
-
 while ($row = $resultTypeStats->fetch_assoc()) {
     $types[] = $row['type_name'];
     $typeCounts[] = $row['type_count'];
@@ -29,10 +26,8 @@ JOIN borroww b ON o.number = b.number
 GROUP BY o.Agency, o.User
 ";
 $resultBorrowFromAgency = $conn->query($sqlBorrowFromAgency);
-
 $agencies = [];
 $borrowCounts = [];
-
 while ($row = $resultBorrowFromAgency->fetch_assoc()) {
     $agencies[] = $row['Agency'] . " (" . $row['User'] . ")"; // รวมชื่อหน่วยกับผู้ใช้
     $borrowCounts[] = $row['borrow_count'];
@@ -42,12 +37,10 @@ $colors = [];
 for ($i = 0; $i < count($agencies); $i++) {
     $colors[] = sprintf('rgba(%d, %d, %d, 0.2)', rand(0, 255), rand(0, 255), rand(0, 255));
 }
-
 $borderColors = [];
 for ($i = 0; $i < count($agencies); $i++) {
     $borderColors[] = sprintf('rgba(%d, %d, %d, 1)', rand(0, 255), rand(0, 255), rand(0, 255));
 }
-
 // สถิติการยืมและคืนตามเดือน
 $sqlStatsByMonth = "
     SELECT 
@@ -59,17 +52,14 @@ $sqlStatsByMonth = "
     ORDER BY month
 ";
 $resultStatsByMonth = $conn->query($sqlStatsByMonth);
-
 $months = [];
 $borrowedCounts = [];
 $returnedCounts = [];
-
 while ($row = $resultStatsByMonth->fetch_assoc()) {
     $months[] = $row['month'];
     $borrowedCounts[] = $row['borrowed'];
     $returnedCounts[] = $row['returned'];
 }
-
 $conn->close();
 ?>
 <style>
@@ -92,13 +82,7 @@ $conn->close();
         transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .chart-container {
-        width: 80%;
-        /* เปลี่ยนเป็นขนาดที่ต้องการ */
-        height: 400px;
-        /* เปลี่ยนเป็นขนาดที่ต้องการ */
-        margin: auto;
-    }
+   
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -152,9 +136,12 @@ $conn->close();
         }
 
         .chart-container {
-            width: 100%;
-            height: 100%;
-        }
+        width: 80%;
+        /* เปลี่ยนเป็นขนาดที่ต้องการ */
+        height: 400px;
+        /* เปลี่ยนเป็นขนาดที่ต้องการ */
+        margin: auto;
+    }
 
         h2 {
             text-align: center;
@@ -177,27 +164,23 @@ $conn->close();
                 <h2>ประเภทอุปกรณ์ IT</h2>
                 <canvas id="typeChart" class="chart-container"></canvas>
             </div>
-
             <!-- ขวาบน: กราฟแท่งแสดงรายการยืมจากหน่วย -->
             <div class="right-top">
                 <h2>รายการยืมจากหน่วย</h2>
                 <canvas id="borrowChart" class="chart-container"></canvas>
             </div>
         </div>
-
         <!-- ส่วนล่าง: กราฟผู้ยืมคืน -->
         <div class="bottom-section">
             <h2>สถิติการยืมและคืนอุปกรณ์ IT</h2>
             <canvas id="statsChart" class="chart-container"></canvas>
         </div>
     </div>
-
     <script>
         // ตัวอย่างข้อมูลประเภทอุปกรณ์ (อัพเดทด้วยข้อมูลจริง)
         const typeLabels = <?php echo json_encode($types); ?>;
         const typeData = <?php echo json_encode($typeCounts); ?>;
         const originalTypeData = [...typeData]; // Clone the original array
-
         const pieData = {
             labels: typeLabels,
             datasets: [{
@@ -212,7 +195,6 @@ $conn->close();
                 borderWidth: 1
             }]
         };
-
         const pieConfig = {
             type: 'pie',
             data: pieData,
@@ -232,18 +214,14 @@ $conn->close();
                 }
             }
         };
-
         // กราฟวงกลมประเภทอุปกรณ์
         const ctxPie = document.getElementById('typeChart').getContext('2d');
         new Chart(ctxPie, pieConfig);
-
-
         // อัพเดทข้อมูลกราฟแท่งรายการยืมจากหน่วย
         const borrowAgencyLabels = <?php echo json_encode($agencies); ?>; // ใช้ชื่อหน่วยงานเป็น labels
         const borrowAgencyData = <?php echo json_encode($borrowCounts); ?>; // จำนวนการยืมของแต่ละหน่วยงาน
         const backgroundColors = <?php echo json_encode($colors); ?>; // สีพื้นหลังของแต่ละแท่งกราฟ
         const borderColors = <?php echo json_encode($borderColors); ?>; // สีขอบของแต่ละแท่งกราฟ
-
         const borrowData = {
             labels: borrowAgencyLabels, // ใช้ชื่อหน่วยงานแต่ละอันเป็น labels
             datasets: [{
@@ -254,7 +232,6 @@ $conn->close();
                 borderWidth: 1
             }]
         };
-
         const borrowConfig = {
             type: 'bar',
             data: borrowData,
@@ -276,16 +253,12 @@ $conn->close();
                 }
             }
         };
-
         const ctxBarBorrow = document.getElementById('borrowChart').getContext('2d');
         new Chart(ctxBarBorrow, borrowConfig);
-
-
         // กราฟแท่งสถิติการยืมและคืน
         const months = <?php echo json_encode($months); ?>;
         const borrowedCounts = <?php echo json_encode($borrowedCounts); ?>;
         const returnedCounts = <?php echo json_encode($returnedCounts); ?>;
-
         // สร้างกราฟแท่งสำหรับการยืมและคืน
         const statsData = {
             labels: months,
@@ -307,7 +280,6 @@ $conn->close();
                 }
             ]
         };
-
         const statsConfig = {
             type: 'bar',
             data: statsData,
@@ -337,7 +309,6 @@ $conn->close();
                 }
             }
         };
-
         // วาดกราฟแท่ง
         const ctxStats = document.getElementById('statsChart').getContext('2d');
         new Chart(ctxStats, statsConfig);
