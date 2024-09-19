@@ -1,15 +1,7 @@
 <?php
 session_start();
 include "../connect.php";
-// ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
-if (!isset($_SESSION['username'])) {
-    header("Location: index.php");
-    exit();
-}
-if (!isset($_SESSION['u_id'])) {
-    echo "Error: User ID is not set in session.";
-    exit();
-}
+
 // ดึงข้อมูลผู้ใช้จาก Session
 $fname = $_SESSION['u_fname'];
 $lname = $_SESSION['u_lname'];
@@ -120,7 +112,7 @@ $office_agency = $office_data['Agency'];
             </div>
             <div class="col-md-10">
                 <button type="button" class="btn btn-success" onclick="addborrow()" style="margin-bottom: 2%;">ขอยืมอุปกรณ์ IT</button>
-                <button type="button" class="btn btn-success" onclick="window.location.href='Statistical.php'">สถิติการใช้อุปกรณ์ IT</button>
+                <button type="button" class="btn btn-success" onclick="window.location.href='Statistical.php'" style="margin-bottom: 2%;">สถิติการใช้อุปกรณ์ IT</button>
                 <br>
                 <form action="getSql.php" method="POST" class="row g-3" id="formdata" style="display: none">
                     <div class="row">
@@ -213,7 +205,6 @@ $office_agency = $office_data['Agency'];
                                         <h5 class="card-title"><?php echo htmlspecialchars($type_name); ?></h5>
                                         <p class="card-text">จำนวนคงเหลือ <?php echo $remaining; ?></p>
                                         <p class="card-text">จำนวนที่ถูกยืม <?php echo $borrowed; ?></p>
-
                                     </div>
                                 </div>
                             </div>
@@ -241,7 +232,7 @@ $office_agency = $office_data['Agency'];
                 FROM borroww b 
                 JOIN users u ON b.u_id = u.u_id
                 JOIN statuslist s ON b.st_id = s.st_id
-                WHERE b.u_id = '$u_id'";
+                WHERE b.number = '$address'";
                                 $row_number = 1;
                                 $result = mysqli_query($conn, $sql);
                                 if (mysqli_num_rows($result) > 0) {
@@ -265,14 +256,11 @@ $office_agency = $office_data['Agency'];
                                             echo "<form id='return-all-form' action='updateAllStatus.php' method='POST' style='display:none;'>";
                                             echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                             echo "</form>";
-
                                             echo "<form action='updateStatus.php' method='POST'>";
                                             echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                             echo "<label for='ag_id_$row_number'>อุปกรณ์ที่ยืม</label>";
-
                                             $sql_items = "SELECT ag_id, ag_status FROM items_1 WHERE ag_type = '$type_id' AND BruID = '" . htmlspecialchars($row['BruID']) . "'";
                                             $items_result = $conn->query($sql_items);
-
                                             $status_count = 0;
                                             if ($items_result->num_rows > 0) {
                                                 while ($item = $items_result->fetch_assoc()) {
@@ -280,14 +268,11 @@ $office_agency = $office_data['Agency'];
                                                         $status_count++;
                                                     }
                                                 }
-
                                                 $items_result->data_seek(0);
-
                                                 while ($item = $items_result->fetch_assoc()) {
                                                     echo "<div class='form-group' style='display: flex; align-items: center;'>";
                                                     echo "<p style='flex: 1; margin: 0;'>" . htmlspecialchars($item['ag_id']) . "</p>";
                                                     echo "<input type='hidden' name='ag_id[]' value='" . htmlspecialchars($item['ag_id']) . "'>";
-
                                                     if ($item['ag_status'] == 'ST002' || $item['ag_status'] == 'ST005') {
                                                         if ($status_count == 1) {
                                                             echo "<button type='button' id='return-all' class='btn btn-warning' onclick='returnAllItems(\"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนทั้งหมด</button>";
@@ -302,17 +287,13 @@ $office_agency = $office_data['Agency'];
                                             } else {
                                                 echo "<p>ไม่มีอุปกรณ์ที่ยืมอยู่ในสถานะปัจจุบัน</p>";
                                             }
-
                                             if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005' || $row['st_id'] == 'ST006') {
                                                 echo "<button type='button' id='return-all' class='btn btn-primary' onclick='returnAllItems(\"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนทั้งหมด</button>";
                                             } else if ($row['st_id'] == 'ST008') {
                                                 echo "<button type='submit' class='btn btn-primary' name='return_all' disabled>แจ้งคืนทั้งหมด</button>";
                                             }
-
                                             echo "</form>";
                                         }
-
-
                                         echo "</td>";
                                         echo "</tr>";
                                         $row_number++;
@@ -427,7 +408,7 @@ $office_agency = $office_data['Agency'];
                 detailsRow.style.display = 'none';
             }
         }
-    
+
 
         function returnItem(ag_id, BruID) {
             if (confirm("คุณต้องการแจ้งคืนอุปกรณ์นี้หรือไม่?")) {

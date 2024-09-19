@@ -213,11 +213,8 @@ $office_agency = $office_data['Agency'];
                         <input type="submit" class="extend-button" name="submit" value="บันทึกการยืม" id="submid">
                     </form>
                 </div>
-
-                <br>
                 <div class="col-md-12">
                 </div>
-                <br>
                 <div class="row">
                     <?php
                     $sql = "SELECT * FROM item_type";
