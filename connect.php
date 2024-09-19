@@ -2,7 +2,7 @@
     $host="localhost";
     $username="root";
     $password ="";
-    $database = "itmes";
+    $database = "items";
 
     $conn = mysqli_connect($host,$username,$password,$database) or die("Error : ".mysqli_error($con));
     function mysqlFetch($conn,$sql){
