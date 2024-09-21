@@ -91,7 +91,6 @@ while ($statusRow = $statusResult->fetch_assoc()) {
         background-color: #dc3545;
         color: white;
     }
-
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -175,11 +174,21 @@ while ($statusRow = $statusResult->fetch_assoc()) {
                 <!-- เพิ่มผู้ใช้งาน -->
                 <section>
                     <h2>เพิ่มผู้ใช้งาน</h2>
-                    <form method="POST" action="add_user.php">
-                        <input type="text" name="u_fname" placeholder="First Name" required class="form-control">
-                        <input type="text" name="u_lname" placeholder="Last Name" required class="form-control">
-                        <input type="email" name="u_email" placeholder="Email" required class="form-control">
-                        <select name="u_address" required class="form-control">
+                    <!-- เพิ่มการเว้นขอบให้กับฟอร์ม -->
+                    <form method="POST" action="add_user.php" style="padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 600px; margin: auto;" onsubmit="return validateForm()">
+                        <!-- ชื่อและนามสกุลอยู่แถวเดียวกัน -->
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="text" name="u_fname" placeholder="First Name" required class="form-control" style="width: 50%;">
+                            <input type="text" name="u_lname" placeholder="Last Name" required class="form-control" style="width: 50%;">
+                        </div>
+
+                        <!-- อีเมล (ช่องเดียว) -->
+                        <div style="margin-bottom: 10px;">
+                            <input type="email" name="u_email" placeholder="Email" required class="form-control" style="width: 100%;">
+                        </div>
+
+                        <!-- ที่อยู่ -->
+                        <select name="u_address" required class="form-control" style="margin-bottom: 10px;">
                             <option value="" disabled selected>Select Address</option>
                             <?php
                             // รีเซ็ตตัวชี้ผลลัพธ์ของ office
@@ -190,16 +199,50 @@ while ($statusRow = $statusResult->fetch_assoc()) {
                                 </option>
                             <?php } ?>
                         </select>
-                        <input type="text" name="u_username" placeholder="Username" required class="form-control">
-                        <input type="password" name="u_password" placeholder="Password" required class="form-control">
-                        <select name="u_status_id" required class="form-control">
+
+                        <!-- Username และ Password อยู่แถวเดียวกัน -->
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <!-- Username: อย่างน้อย 4 ตัวอักษร และใช้ได้เฉพาะ (A-Z, a-z, 0-9, @, _, .) -->
+                            <input type="text" name="u_username" placeholder="Username" required class="form-control" pattern="^[a-zA-Z0-9@_.]{4,}$" title="Username ต้องมีอย่างน้อย 4 ตัวอักษร และใช้ได้เฉพาะตัวอักษร (A-Z, a-z), ตัวเลข (0-9), และสัญลักษณ์ @, _, ." style="width: 50%;">
+
+                            <!-- Password: อย่างน้อย 4 ตัวอักษร และใช้ได้เฉพาะ (A-Z, a-z, 0-9) -->
+                            <input type="password" name="u_password" placeholder="Password" required class="form-control" pattern="^[a-zA-Z0-9]{4,}$" title="Password ต้องมีอย่างน้อย 4 ตัวอักษร และใช้ได้เฉพาะตัวอักษร (A-Z, a-z), ตัวเลข (0-9)" style="width: 50%;">
+                        </div>
+
+                        <!-- สถานะ -->
+                        <select name="u_status_id" required class="form-control" style="margin-bottom: 10px;">
                             <?php foreach ($statusOptions as $statusId => $statusName) { ?>
                                 <option value="<?php echo $statusId; ?>"><?php echo $statusName; ?></option>
                             <?php } ?>
                         </select>
-                        <button type="submit" class="btn btn-primary">Add User</button>
+
+                        <!-- ปุ่มเพิ่มผู้ใช้ -->
+                        <button type="submit" class="btn btn-success">เพิ่มผู้ใช้</button>
                     </form>
                 </section>
+
+                <!-- JavaScript สำหรับตรวจสอบฟอร์ม -->
+                <script>
+                    function validateForm() {
+                        const username = document.querySelector('input[name="u_username"]').value;
+                        const password = document.querySelector('input[name="u_password"]').value;
+
+                        // ตรวจสอบความยาว Username
+                        if (username.length < 4) {
+                            alert("Username ต้องมีอย่างน้อย 4 ตัวอักษร");
+                            return false;
+                        }
+
+                        // ตรวจสอบความยาว Password
+                        if (password.length < 4) {
+                            alert("Password ต้องมีอย่างน้อย 4 ตัวอักษร");
+                            return false;
+                        }
+
+                        return true; // ส่งข้อมูลได้หากผ่านการตรวจสอบ
+                    }
+                </script>
+
         </div>
         </main>
     </div>
