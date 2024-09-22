@@ -103,8 +103,8 @@ $office_agency = $office_data['Agency'];
                 <div id="addItemTypeForm">
                     <form action="add_item_type.php" method="POST">
                         <div class="form-group">
-                        <label id="headline">ข้อมูลประเภทอุปกรณ์</label>
-                        <hr>
+                            <label id="headline">ข้อมูลประเภทอุปกรณ์</label>
+                            <hr>
                             <label for="type_name">ชื่อประเภท</label>
                             <input type="text" class="form-control" id="type_name" name="type_name" maxlength="50" required>
                         </div>
@@ -120,8 +120,8 @@ $office_agency = $office_data['Agency'];
                 <div id="addItemForm">
                     <form action="add_item.php" method="POST">
                         <div class="form-group">
-                        <label id="headline">ข้อมูลอุปกรณ์</label>
-                        <hr>
+                            <label id="headline">ข้อมูลอุปกรณ์</label>
+                            <hr>
                             <label for="ag_type">ประเภท</label>
                             <select class="form-control" id="ag_type" name="ag_type" required>
                                 <?php
@@ -137,7 +137,7 @@ $office_agency = $office_data['Agency'];
                             </select>
                         </div>
                         <div class="form-group">
-                       
+
                             <label for="ag_id">รหัสอุปกรณ์</label>
                             <input type="text" class="form-control" id="ag_id" name="ag_id" maxlength="50" required>
                         </div>
@@ -379,7 +379,7 @@ $office_agency = $office_data['Agency'];
                                             } elseif ($row['st_id'] == 'ST009') {
                                                 echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                                 echo "<label for='ag_id_$row_number'>ประวัติอุปกรณ์ที่รับคืน</label>";
-                                            
+
                                                 // ดึงข้อมูลจากตาราง borrohistory ที่ BruID ตรงกัน และ JOIN กับ statuslist เพื่อดึง st_name
                                                 $sql_history = "
                                                     SELECT bh.b_items, sl.st_name 
@@ -390,7 +390,7 @@ $office_agency = $office_data['Agency'];
                                                 $stmt_history->bind_param('s', $row['BruID']);
                                                 $stmt_history->execute();
                                                 $history_result = $stmt_history->get_result();
-                                            
+
                                                 if ($history_result->num_rows > 0) {
                                                     while ($history = $history_result->fetch_assoc()) {
                                                         // ดึงชื่ออุปกรณ์จากตาราง items_1 โดยใช้ ag_id ที่ตรงกับ b_items
@@ -399,10 +399,10 @@ $office_agency = $office_data['Agency'];
                                                         $stmt_item_name->bind_param('s', $history['b_items']);
                                                         $stmt_item_name->execute();
                                                         $item_result = $stmt_item_name->get_result();
-                                            
+
                                                         if ($item_result->num_rows > 0) {
                                                             $item = $item_result->fetch_assoc();
-                                            
+
                                                             echo "<div class='form-group' style='display: flex; align-items: center; justify-content: space-between;'>";
                                                             echo "<p style='margin-right: 10px;'>ชื่ออุปกรณ์: " . htmlspecialchars($item['ag_name']) . "</p>";
                                                             echo "<p style='margin-right: 10px;'>สถานะ: " . htmlspecialchars($history['st_name']) . "</p>";
@@ -414,7 +414,7 @@ $office_agency = $office_data['Agency'];
                                                 }
                                                 echo "</form>";
                                             }
-                                            
+
                                             echo "</tr>";
                                             $row_number++;
                                         }
@@ -640,7 +640,32 @@ $office_agency = $office_data['Agency'];
                     event.preventDefault(); // ป้องกันการส่งฟอร์ม
                 }
             });
-            
+            $(document).ready(function() {
+                // ตรวจสอบเมื่อมีการกดบันทึก
+                $('#submid').on('click', function(event) {
+                    var borrowDate = document.getElementById("bordate").value;
+                    var returnDate = document.getElementById("returnDate").value;
+
+                    // ตรวจสอบว่ากรอกวันที่ทั้งสองหรือไม่
+                    if (!borrowDate) {
+                        alert("กรุณาเลือกวันที่ยืม");
+                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+                        return;
+                    }
+
+                    if (!returnDate) {
+                        alert("กรุณาเลือกวันที่คืน");
+                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+                        return;
+                    }
+
+                    // ตรวจสอบว่ากำหนดวันคืนมากกว่าวันยืมหรือไม่
+                    if (new Date(returnDate) <= new Date(borrowDate)) {
+                        alert("วันคืนต้องมากกว่าวันที่ยืม");
+                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+                    }
+                });
+            });
         </script>
 </body>
 

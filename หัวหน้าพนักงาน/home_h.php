@@ -441,6 +441,32 @@ $office_agency = $office_data['Agency'];
                 xhr.send("BruID=" + BruID);
             }
         }
+        $(document).ready(function() {
+        // ตรวจสอบเมื่อมีการกดบันทึก
+        $('#submid').on('click', function(event) {
+            var borrowDate = document.getElementById("bordate").value;
+            var returnDate = document.getElementById("returnDate").value;
+            
+            // ตรวจสอบว่ากรอกวันที่ทั้งสองหรือไม่
+            if (!borrowDate) {
+                alert("กรุณาเลือกวันที่ยืม");
+                event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+                return;
+            }
+
+            if (!returnDate) {
+                alert("กรุณาเลือกวันที่คืน");
+                event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+                return;
+            }
+
+            // ตรวจสอบว่ากำหนดวันคืนมากกว่าวันยืมหรือไม่
+            if (new Date(returnDate) <= new Date(borrowDate)) {
+                alert("วันคืนต้องมากกว่าวันที่ยืม");
+                event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+            }
+        });
+    });
     </script>
 
 </body>
