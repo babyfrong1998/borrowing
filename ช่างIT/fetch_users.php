@@ -1,6 +1,5 @@
 <?php
 include "../connect.php";
-
 if (isset($_POST['query'])) {
     $query = $_POST['query'];
     $sql = "SELECT u_id, CONCAT(u_fname, ' ', u_lname) AS fullname FROM users WHERE CONCAT(u_fname, ' ', u_lname) LIKE '%$query%'";

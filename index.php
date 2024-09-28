@@ -1,7 +1,7 @@
 <?php
 session_start();
 include "connect.php";
-if(isset($_SESSION['fname'])&&isset($_SESSION['lname'])){
+if (isset($_SESSION['fname']) && isset($_SESSION['lname'])) {
     header("Location:index.php");
 }
 ?>
@@ -32,9 +32,9 @@ if(isset($_SESSION['fname'])&&isset($_SESSION['lname'])){
         background-image: url(img/bg.png);
         background-attachment: fixed;
         background-repeat: no-repeat;
-        
     }
 </style>
+
 <body>
     <div class="container">
         <div class="row justify-content-center align-items-center g-2">
@@ -43,40 +43,39 @@ if(isset($_SESSION['fname'])&&isset($_SESSION['lname'])){
                 <div class="card">
                     <div class="card-body">
                         <form action="con1.php" method="post">
-                        <div class="container">
-                            <div class="row justify-content-center align-items-center g-2">
-                                <div class="col-md-12">
-                                <center><h1>ระบบยืมคืนอุปกรณ์ IT</h1></center>
-                                <center><label for="" style="color:red;">
-                                        <?php 
-                                        if(isset($_GET['t']) && $_GET['t'] == 1){ 
-                                            echo "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง";
-                                        }
-                                        ?>
-                                    </label></center></div>
-                                <div class="col-md-12">
-                                    <label for="">ชื่อผู้เข้าใช้งาน</label>
-                                    <input type="text" name="username" class="form-control w-100" placeholder="username">
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="">รหัสผ่าน</label>
-                                    <input type="password" name="password" class="form-control w-100" placeholder="password" ]>
-                                </div>
-                                <div class="col-md-12">
-                                    <input type="submit" name="login" value="ล็อกอิน" class="fbtn btn-primary w-100">
+                            <div class="container">
+                                <div class="row justify-content-center align-items-center g-2">
+                                    <div class="col-md-12">
+                                        <center>
+                                            <h1>ระบบยืมคืนอุปกรณ์ IT</h1>
+                                        </center>
+                                        <center><label for="" style="color:red;">
+                                                <?php
+                                                if (isset($_GET['t']) && $_GET['t'] == 1) {
+                                                    echo "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง";
+                                                }
+                                                ?>
+                                            </label></center>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label for="">ชื่อผู้เข้าใช้งาน</label>
+                                        <input type="text" name="username" class="form-control w-100" placeholder="username">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label for="">รหัสผ่าน</label>
+                                        <input type="password" name="password" class="form-control w-100" placeholder="password" ]>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <input type="submit" name="login" value="ล็อกอิน" class="fbtn btn-primary w-100">
+                                    </div>
                                 </div>
                             </div>
-
-                        </div>
-
                     </div>
                 </div>
             </div>
             <div class="col-md-3"></div>
         </div>
     </div>
-
-
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
@@ -85,7 +84,6 @@ if(isset($_SESSION['fname'])&&isset($_SESSION['lname'])){
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
     <!-- (Optional) Latest compiled and minified JavaScript translation files -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/i18n/defaults-*.min.js"></script>
-
 </body>
 
 </html>

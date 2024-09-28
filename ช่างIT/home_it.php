@@ -137,7 +137,6 @@ $office_agency = $office_data['Agency'];
                             </select>
                         </div>
                         <div class="form-group">
-
                             <label for="ag_id">รหัสอุปกรณ์</label>
                             <input type="text" class="form-control" id="ag_id" name="ag_id" maxlength="50" required>
                         </div>
@@ -198,7 +197,7 @@ $office_agency = $office_data['Agency'];
                             <div class="col-md-4">
                                 <label for="bordate" class="form-label" style="margin-top: 1%;">วันที่ยืม</label>
                                 <br>
-                                <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate" min="<?php echo date('Y-m-d\TH:i'); ?>">
+                                <input type="datetime-local" class="form-control w-100" id="bordate" name="bordate" min="<?php echo date('d-m-Y\TH:i'); ?>">
                             </div>
                             <div class="col-md-4">
                                 <label for="returnDate" class="form-label" style="margin-top: 1%;">กำหนดวันคืน</label>
@@ -219,6 +218,9 @@ $office_agency = $office_data['Agency'];
                     <?php
                     $sql = "SELECT * FROM item_type";
                     if ($res = mysqli_query($conn, $sql)) {
+                        $grand_remaining = 0; // ค่าเริ่มต้นของจำนวนคงเหลือทั้งหมด
+                        $grand_borrowed = 0; // ค่าเริ่มต้นของจำนวนที่ถูกยืมทั้งหมด
+
                         while ($row = mysqli_fetch_array($res)) {
                             $type_id = $row['type_id'];
                             $type_name = $row['type_name'];
@@ -237,6 +239,10 @@ $office_agency = $office_data['Agency'];
                                 $borrowed = $row2['borrowed'];
                             }
                             $total = $remaining + $borrowed;
+
+                            // คำนวณผลรวมของแต่ละประเภท
+                            $grand_remaining += $remaining;
+                            $grand_borrowed += $borrowed;
                     ?>
                             <div class="col-md-4">
                                 <div class="card">
@@ -251,7 +257,20 @@ $office_agency = $office_data['Agency'];
                     <?php
                         }
                     }
+
+                    // แสดงข้อมูลรวมทั้งหมดหลังจากแสดงแบบแยกประเภท
+                    $grand_total = $grand_remaining + $grand_borrowed;
                     ?>
+                    <div class="col-md-12">
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">ข้อมูลอุปกรณ์ทั้งหมด</h5>
+                                <p class="card-text">จำนวนคงเหลือทั้งหมด <?php echo $grand_remaining; ?></p>
+                                <p class="card-text">จำนวนที่ถูกยืมทั้งหมด <?php echo $grand_borrowed; ?></p>
+                                <p class="card-text">จำนวนทั้งหมด <?php echo $grand_total; ?></p>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-12">
                             <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
@@ -270,16 +289,18 @@ $office_agency = $office_data['Agency'];
                                 <tbody>
                                     <?php
                                     $sql = "SELECT b.BruID, u.u_fname, u.u_lname, b.number, b.type_id, b.Brunum, b.BrudateB, b.BrudateRe, b.st_id, b.commen, s.st_name
-                                            FROM borroww b 
-                                            JOIN users u ON b.u_id = u.u_id
-                                            JOIN statuslist s ON b.st_id = s.st_id";
+                FROM borroww b 
+                JOIN users u ON b.u_id = u.u_id
+                JOIN statuslist s ON b.st_id = s.st_id";
                                     $row_number = 1;
                                     $result = mysqli_query($conn, $sql);
-
                                     if (mysqli_num_rows($result) > 0) {
                                         while ($row = mysqli_fetch_assoc($result)) {
                                             $type_id = $row['type_id'];
-                                            $st_name = $row['st_name']; // Use st_name instead of st_id
+                                            $st_name = $row['st_name'];
+                                            $BrudateRe = date_create($row['BrudateRe']);
+                                            $BrudateB = date_create($row['BrudateB']);
+                                            $currentDate = date_create(); // วันที่ปัจจุบัน
 
                                             echo "<tr onclick='toggleDetails($row_number)'>";
                                             echo "<td>" . $row_number . "</td>";
@@ -287,25 +308,49 @@ $office_agency = $office_data['Agency'];
                                             echo "<td>" . $row['number'] . "</td>";
                                             echo "<td>" . $row['type_id'] . "</td>";
                                             echo "<td>" . $row['Brunum'] . "</td>";
-                                            echo "<td>" . $row['BrudateB'] . "</td>";
-                                            echo "<td>" . $row['BrudateRe'] . "</td>";
-                                            echo "<td>" . $st_name . "</td>"; // Display status name instead of id
+                                            echo "<td>" . date_format($BrudateB, "d/m/") . (date_format($BrudateB, "Y") + 543) . "</td>";
+                                            echo "<td>" . date_format($BrudateRe, "d/m/") . (date_format($BrudateRe, "Y") + 543) . "</td>";
+                                            echo "<td>" . $st_name . "</td>";
                                             echo "</tr>";
 
                                             // เริ่มแสดงผลตามสถานะ
                                             echo "<tr id='details_$row_number' style='display: none;'>";
                                             echo "<td colspan='8'>";
-                                            echo "<p><strong>หมายเหตุ:</strong> " . htmlspecialchars($row['commen']) . "</p>"; // แสดงข้อมูล commen
+                                            echo "<p><strong>หมายเหตุ:</strong> " . htmlspecialchars($row['commen']) . "</p>";
 
+                                            // ตรวจสอบสถานะ ST002 หรือ ST005
+                                            if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005') {
+                                                // แสดงข้อมูลอุปกรณ์ที่ยืม
+                                                $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND BruID = '" . $row['BruID'] . "'";
+                                                $items_result = $conn->query($sql_items);
+                                                if ($items_result->num_rows > 0) {
+                                                    while ($item = $items_result->fetch_assoc()) {
+                                                        echo "<div class='form-group'>";
+                                                        echo "<p>" . htmlspecialchars($item['ag_name']) . "</p>";
+                                                        echo "<input type='hidden' name='ag_id[]' value='" . htmlspecialchars($item['ag_id']) . "'>";
+                                                        echo "</div>";
+                                                    }
+                                                }
+
+                                                // ตรวจสอบวันคืน และแสดงปุ่มพิมพ์ใบแจ้งคืน
+                                                if ($BrudateRe <= $currentDate) {
+                                                    echo "<button type='button' class='btn btn-primary' onclick='printReturnForm()'>พิมพ์ใบแจ้งคืน</button>";
+                                                } else {
+                                                    echo "<p>ยังไม่ถึงกำหนดวันคืน</p>";
+                                                }
+                                            }
+
+                                            echo "</td>";
+                                            echo "</tr>";
+
+                                            // การจัดการสถานะอื่น ๆ
                                             if ($row['st_id'] == 'ST007') {
-                                                // สถานะรอยืนยันการยืม
+                                                echo "<tr id='details_$row_number' style='display: none;'>";
+                                                echo "<td colspan='8'>";
                                                 echo "<form id='borrowForm_$row_number' class='borrow-form' action='confirm_borrow.php' method='POST' onsubmit='return validateForm($row_number)'>";
                                                 echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
-                                                echo "<input type='hidden' name='BrudateRe' value='" . $row['BrudateRe'] . "'>"; // ส่งข้อมูลวันที่คืน
-
+                                                echo "<input type='hidden' name='BrudateRe' value='" . $row['BrudateRe'] . "'>";
                                                 echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
-
-                                                // สร้างรายการตัวเลือกทั้งหมดเพียงครั้งเดียว
                                                 $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
                                                 $items_result = $conn->query($sql_items);
                                                 $items_options = [];
@@ -314,8 +359,6 @@ $office_agency = $office_data['Agency'];
                                                         $items_options[] = "<option value='" . $item['ag_id'] . "'>" . $item['ag_name'] . "</option>";
                                                     }
                                                 }
-
-                                                // แสดง dropdown สำหรับแต่ละแถว
                                                 for ($i = 0; $i < $row['Brunum']; $i++) {
                                                     echo "<div class='form-group'>";
                                                     echo "<select class='form-control ag-select' name='ag_id[]' required>";
@@ -323,86 +366,55 @@ $office_agency = $office_data['Agency'];
                                                     echo "</select>";
                                                     echo "</div>";
                                                 }
-
                                                 echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
                                                 echo "</form>";
-                                            } elseif ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005') {
-                                                // สถานะยืมใช้งานอยู่
-                                                echo "<form action='update_borrow.php' method='POST'>";
-                                                echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
-                                                echo "<label for='ag_id_$row_number'>อุปกรณ์ที่ยืม</label>";
-
-                                                $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND (ag_status = 'ST002' OR ag_status = 'ST005') AND BruID = '" . $row['BruID'] . "'";
-                                                $items_result = $conn->query($sql_items);
-
-                                                if ($items_result->num_rows > 0) {
-                                                    while ($item = $items_result->fetch_assoc()) {
-                                                        echo "<div class='form-group'>";
-                                                        // แสดงชื่ออุปกรณ์โดยตรง
-                                                        echo "<p>" . htmlspecialchars($item['ag_name']) . "</p>";
-                                                        echo "<input type='hidden' name='ag_id[]' value='" . $item['ag_id'] . "'>";
-                                                        echo "</div>";
-                                                    }
-                                                }
-
-                                                //echo "<button type='submit' class='btn btn-primary'>บันทึกการเปลี่ยนแปลง</button>";
-                                                echo "</form>";
+                                                echo "</td>";
+                                                echo "</tr>";
                                             } elseif ($row['st_id'] == 'ST006' || $row['st_id'] == 'ST008') {
+                                                echo "<tr id='details_$row_number' style='display: none;'>";
+                                                echo "<td colspan='8'>";
                                                 echo "<form action='confirm_return.php' method='POST'>";
                                                 echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                                 echo "<label for='ag_id_$row_number'>อุปกรณ์ที่แจ้งคืน</label>";
-
-                                                $sql_items = "SELECT ag_id, ag_name, ag_status FROM items_1 WHERE ag_type = '$type_id' AND (ag_status = 'ST008' OR ag_status = 'ST009'OR ag_status = 'ST006') AND BruID = '" . $row['BruID'] . "'";
+                                                $sql_items = "SELECT ag_id, ag_name, ag_status FROM items_1 WHERE ag_type = '$type_id' AND (ag_status = 'ST008' OR ag_status = 'ST009' OR ag_status = 'ST006') AND BruID = '" . $row['BruID'] . "'";
                                                 $items_result = $conn->query($sql_items);
-
                                                 if ($items_result->num_rows > 0) {
                                                     while ($item = $items_result->fetch_assoc()) {
                                                         echo "<div class='form-group' style='display: flex; align-items: center; justify-content: space-between;'>";
-
-                                                        // แสดงชื่ออุปกรณ์
                                                         echo "<p style='margin-right: 10px;'>" . htmlspecialchars($item['ag_name']) . "</p>";
-
-                                                        // ตรวจสอบสถานะ ag_status
                                                         if ($item['ag_status'] == 'ST009') {
-                                                            // ปุ่มแสดงสถานะคืนอุปกรณ์แล้ว และไม่สามารถกดได้
                                                             echo "<button type='button' class='btn btn-success' disabled>รับคืนอุปกรณ์แล้ว</button>";
                                                         } else {
-                                                            // ปุ่มยืนยันคืนอุปกรณ์
                                                             echo "<button type='button' id='return-item-" . htmlspecialchars($item['ag_id']) . "' class='btn btn-warning' onclick='returnItem(\"" . htmlspecialchars($item['ag_id']) . "\", \"" . htmlspecialchars($row['BruID']) . "\")'>ยืนยันคืนอุปกรณ์นี้</button>";
                                                         }
-
                                                         echo "</div>";
                                                     }
                                                 }
-
                                                 echo "</form>";
+                                                echo "</td>";
+                                                echo "</tr>";
                                             } elseif ($row['st_id'] == 'ST009') {
-                                                echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
+                                                echo "<tr id='details_$row_number' style='display: none;'>";
+                                                echo "<td colspan='8'>";
                                                 echo "<label for='ag_id_$row_number'>ประวัติอุปกรณ์ที่รับคืน</label>";
-
-                                                // ดึงข้อมูลจากตาราง borrohistory ที่ BruID ตรงกัน และ JOIN กับ statuslist เพื่อดึง st_name
                                                 $sql_history = "
-                                                    SELECT bh.b_items, sl.st_name 
-                                                    FROM borrohistory bh 
-                                                    JOIN statuslist sl ON bh.b_status = sl.st_id 
-                                                    WHERE bh.BruID = ? AND bh.b_status = 'ST009'";
+                        SELECT bh.b_items, sl.st_name 
+                        FROM borrohistory bh 
+                        JOIN statuslist sl ON bh.b_status = sl.st_id 
+                        WHERE bh.BruID = ? AND bh.b_status = 'ST009'";
                                                 $stmt_history = $conn->prepare($sql_history);
                                                 $stmt_history->bind_param('s', $row['BruID']);
                                                 $stmt_history->execute();
                                                 $history_result = $stmt_history->get_result();
-
                                                 if ($history_result->num_rows > 0) {
                                                     while ($history = $history_result->fetch_assoc()) {
-                                                        // ดึงชื่ออุปกรณ์จากตาราง items_1 โดยใช้ ag_id ที่ตรงกับ b_items
                                                         $sql_item_name = "SELECT ag_name FROM items_1 WHERE ag_id = ?";
                                                         $stmt_item_name = $conn->prepare($sql_item_name);
                                                         $stmt_item_name->bind_param('s', $history['b_items']);
                                                         $stmt_item_name->execute();
                                                         $item_result = $stmt_item_name->get_result();
-
                                                         if ($item_result->num_rows > 0) {
                                                             $item = $item_result->fetch_assoc();
-
                                                             echo "<div class='form-group' style='display: flex; align-items: center; justify-content: space-between;'>";
                                                             echo "<p style='margin-right: 10px;'>ชื่ออุปกรณ์: " . htmlspecialchars($item['ag_name']) . "</p>";
                                                             echo "<p style='margin-right: 10px;'>สถานะ: " . htmlspecialchars($history['st_name']) . "</p>";
@@ -412,10 +424,9 @@ $office_agency = $office_data['Agency'];
                                                 } else {
                                                     echo "<p>ไม่มีประวัติการคืนอุปกรณ์.</p>";
                                                 }
-                                                echo "</form>";
+                                                echo "</td>";
+                                                echo "</tr>";
                                             }
-
-                                            echo "</tr>";
                                             $row_number++;
                                         }
                                     } else {
@@ -474,7 +485,6 @@ $office_agency = $office_data['Agency'];
             }
             document.addEventListener('DOMContentLoaded', function() {
                 const selects = document.querySelectorAll('.ag-select');
-
                 selects.forEach((select, index) => {
                     select.addEventListener('change', function() {
                         // เก็บค่าอุปกรณ์ที่เลือกไว้ในแถวนี้
@@ -484,7 +494,6 @@ $office_agency = $office_data['Agency'];
                                 selectedValues.push(sel.value);
                             }
                         });
-
                         // กรองตัวเลือกใน select ของแถวถัดไป
                         selects.forEach((sel, idx) => {
                             if (idx > index) {
@@ -505,7 +514,6 @@ $office_agency = $office_data['Agency'];
                 // ดึงฟอร์มที่เฉพาะเจาะจง
                 var form = document.getElementById('borrowForm_' + rowNumber);
                 if (!form) return true; // ไม่มีฟอร์ม ไม่ต้องตรวจสอบ
-
                 var ag_selects = form.querySelectorAll('.ag-select');
                 var selectedValues = [];
                 for (var i = 0; i < ag_selects.length; i++) {
@@ -534,7 +542,6 @@ $office_agency = $office_data['Agency'];
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", "confirm_return.php", true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
                 // เมื่อ request สำเร็จ
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === 4 && xhr.status === 200) {
@@ -547,7 +554,6 @@ $office_agency = $office_data['Agency'];
                         button.disabled = true;
                     }
                 };
-
                 // ส่ง ag_id ไปที่เซิร์ฟเวอร์
                 xhr.send("ag_id=" + ag_id + "&action=confirm_return");
             }
@@ -576,7 +582,39 @@ $office_agency = $office_data['Agency'];
                         $('#userList').fadeOut();
                     }
                 });
-
+                document.getElementById('formdata').addEventListener('submit', function(event) {
+                    // ดึงค่าจากฟิลด์ที่ต้องตรวจสอบ
+                    var borname = document.getElementById('inputname').value.trim();
+                    var itemType = document.getElementById('inputcategory').value;
+                    var itemQuantity = document.getElementById('inputQuantity').value;
+                    var borrowDate = document.getElementById("bordate").value;
+                    var returnDate = document.getElementById("returnDate").value;
+                    // สร้างตัวแปรสำหรับเก็บข้อความแจ้งเตือน
+                    var missingFields = [];
+                    // ตรวจสอบว่าฟิลด์ไหนขาดหายไป
+                    if (!borname) {
+                        missingFields.push('ชื่อผู้ยืม');
+                    }
+                    if (!itemType) {
+                        missingFields.push('ประเภทอุปกรณ์');
+                    }
+                    if (!itemQuantity) {
+                        missingFields.push('จำนวนเครื่อง');
+                    }
+                    // ตรวจสอบว่ากรอกวันที่ทั้งสองหรือไม่
+                    if (!borrowDate) {
+                        missingFields.push('วันที่ยืม');
+                    }
+                    if (!returnDate) {
+                        missingFields.push('วันที่คืน');
+                    }
+                    // ถ้ามีฟิลด์ที่ขาดหาย ให้แจ้งเตือนและยกเลิกการส่งฟอร์ม
+                    if (missingFields.length > 0) {
+                        alert('กรุณากรอกข้อมูลให้ครบถ้วน: ' + missingFields.join(', '));
+                        event.preventDefault(); // ป้องกันการส่งฟอร์ม
+                        return;
+                    }
+                });
                 // เลือกผู้ยืมจาก dropdown
                 $(document).on('click', '#userList li', function() {
                     var fullname = $(this).text();
@@ -584,7 +622,6 @@ $office_agency = $office_data['Agency'];
                     $('#inputname').val(fullname);
                     $('#u_id').val(user_id);
                     $('#userList').fadeOut();
-
                     // ดึงข้อมูลเบอร์หน่วยงานจากฐานข้อมูลเมื่อเลือกผู้ยืม
                     $.ajax({
                         url: "fetch_office.php", // ไฟล์ PHP สำหรับดึงข้อมูลเบอร์หน่วยงาน
@@ -618,54 +655,28 @@ $office_agency = $office_data['Agency'];
                         $('#inputQuantity').html('<option value="">--เลือกจำนวนเครื่อง--</option>');
                     }
                 });
-
-                // กำหนดวันที่ปัจจุบันให้กับ input ที่มี id 'bordate'
+                // กำหนดวันที่ปัจจุบันให้กับ input ที่มี id 'bordate' ที่ใช้สำหรับกำหนดค่าขั้นต่ำ ให้กับฟิลด์วันที่ (input type="date") ในฟอร์ม
                 var today = new Date().toISOString().split('T')[0];
                 document.getElementById('bordate').setAttribute('min', today);
-
                 $('#bordate').on('change', function() {
                     var selectedBorrowDate = new Date(this.value).toISOString().slice(0, 16);
                     document.getElementById("returnDate").min = selectedBorrowDate;
                 });
             });
-            document.getElementById('formdata').addEventListener('submit', function(event) {
-                // ดึงค่าจากฟิลด์
-                var borname = document.getElementById('inputname').value.trim();
-                var itemType = document.getElementById('inputcategory').value;
-                var itemQuantity = document.getElementById('inputQuantity').value;
 
-                // ตรวจสอบว่ามีการกรอกข้อมูลครบถ้วน
-                if (!borname || !itemType || !itemQuantity) {
-                    alert('กรุณากรอกข้อมูลให้ครบถ้วน: ชื่อผู้ยืม, ประเภทอุปกรณ์, และจำนวนเครื่อง');
-                    event.preventDefault(); // ป้องกันการส่งฟอร์ม
+            function toggleDetails(rowNumber) {
+                var detailsRow = document.getElementById('details_' + rowNumber);
+                if (detailsRow.style.display === "none") {
+                    detailsRow.style.display = "table-row";
+                } else {
+                    detailsRow.style.display = "none";
                 }
-            });
-            $(document).ready(function() {
-                // ตรวจสอบเมื่อมีการกดบันทึก
-                $('#submid').on('click', function(event) {
-                    var borrowDate = document.getElementById("bordate").value;
-                    var returnDate = document.getElementById("returnDate").value;
+            }
 
-                    // ตรวจสอบว่ากรอกวันที่ทั้งสองหรือไม่
-                    if (!borrowDate) {
-                        alert("กรุณาเลือกวันที่ยืม");
-                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-                        return;
-                    }
-
-                    if (!returnDate) {
-                        alert("กรุณาเลือกวันที่คืน");
-                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-                        return;
-                    }
-
-                    // ตรวจสอบว่ากำหนดวันคืนมากกว่าวันยืมหรือไม่
-                    if (new Date(returnDate) <= new Date(borrowDate)) {
-                        alert("วันคืนต้องมากกว่าวันที่ยืม");
-                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-                    }
-                });
-            });
+            function printReturnForm() {
+                // เปิดไฟล์ PDF สำหรับพิมพ์
+                window.open('fromRe.pdf', '_blank');
+            }
         </script>
 </body>
 

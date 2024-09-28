@@ -1,19 +1,16 @@
 <?php
 session_start();
 include "../connect.php";
-
 // ตรวจสอบว่าข้อมูลถูกส่งมาครบหรือไม่
 if (isset($_POST['type_name']) && isset($_POST['type_description'])) {
     $type_name = $_POST['type_name'];
     $type_description = $_POST['type_description'];
-
     // ตรวจสอบว่ามีชื่อประเภทอุปกรณ์ซ้ำหรือไม่
     $sql_check = "SELECT * FROM item_type WHERE type_name = ?";
     $stmt_check = $conn->prepare($sql_check);
     $stmt_check->bind_param("s", $type_name);
     $stmt_check->execute();
     $result_check = $stmt_check->get_result();
-
     if ($result_check->num_rows > 0) {
         // ถ้าพบชื่อประเภทอุปกรณ์ซ้ำ
         echo "<script>
@@ -24,7 +21,6 @@ if (isset($_POST['type_name']) && isset($_POST['type_description'])) {
         // ค้นหา type_id ที่มีอยู่แล้วในฐานข้อมูล
         $sql = "SELECT type_id FROM item_type ORDER BY type_id DESC LIMIT 1";
         $result = $conn->query($sql);
-
         if ($result->num_rows > 0) {
             // ดึง type_id ล่าสุดและเพิ่มหมายเลขใหม่
             $row = $result->fetch_assoc();
@@ -35,12 +31,10 @@ if (isset($_POST['type_name']) && isset($_POST['type_description'])) {
             // ถ้าไม่มีข้อมูลในฐานข้อมูล ให้เริ่มจาก T001
             $new_type_id = 'T001';
         }
-
         // เพิ่มประเภทอุปกรณ์ลงในฐานข้อมูล
         $sql_insert = "INSERT INTO item_type (type_id, type_name, type_description) VALUES (?, ?, ?)";
         $stmt_insert = $conn->prepare($sql_insert);
         $stmt_insert->bind_param("sss", $new_type_id, $type_name, $type_description);
-
         if ($stmt_insert->execute()) {
             // แสดงข้อความแจ้งเตือนและ redirect ไปยังหน้า home_it.php
             echo "<script>
@@ -54,10 +48,8 @@ if (isset($_POST['type_name']) && isset($_POST['type_description'])) {
                     window.location.href = 'home_it.php';
                   </script>";
         }
-
         $stmt_insert->close();
     }
-
     $stmt_check->close();
 } else {
     // กรณีที่ข้อมูลไม่ครบ
@@ -66,6 +58,4 @@ if (isset($_POST['type_name']) && isset($_POST['type_description'])) {
             window.location.href = 'home_it.php';
           </script>";
 }
-
 $conn->close();
-?>

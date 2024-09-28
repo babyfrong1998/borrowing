@@ -11,17 +11,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $office_number = $_POST['office_hidden'];
     $st_id = $_POST['st_id'];
     $comment = isset($_POST['comment']) ? trim($_POST['comment']) : '';
-
     // Get the next BruID
     $sql = "SELECT IFNULL(MAX(BruID), 0) + 1 AS next_id FROM borroww";
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);
     $BruID = $row['next_id'];
-
     // Insert data into the borroww table
     $sql = "INSERT INTO borroww (BruID, u_id, type_id, Brunum, BrudateB, BrudateRe, number, st_id, commen) 
             VALUES ('$BruID', '$u_id', '$type_id', '$item_quantity', '$bordate', '$returnDate', '$office_number', '$st_id', '$comment')";
-    
     if (mysqli_query($conn, $sql)) {
         // Redirect with success query parameter
         header("Location: home_it.php?success=1");
@@ -31,4 +28,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     mysqli_close($conn);
 }
-?>

@@ -1,7 +1,6 @@
 <?php
 session_start();
 include "../connect.php";
-
 // ดึงข้อมูลผู้ใช้จาก Session
 $fname = $_SESSION['u_fname'];
 $lname = $_SESSION['u_lname'];
@@ -13,7 +12,6 @@ $result = mysqli_query($conn, $sql);
 $office_data = mysqli_fetch_assoc($result);
 $office_number = $office_data['number'];
 $office_agency = $office_data['Agency'];
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -75,7 +73,6 @@ $office_agency = $office_data['Agency'];
         cursor: pointer;
         border-radius: 4px;
     }
-
 
     #extend-form-container {
         position: fixed;
@@ -239,14 +236,16 @@ $office_agency = $office_data['Agency'];
                                     while ($row = mysqli_fetch_assoc($result)) {
                                         $type_id = $row['type_id'];
                                         $st_name = $row['st_name']; // Use st_name instead of st_id
+                                        $BrudateRe = date_create($row['BrudateRe']);
+                                        $BrudateB = date_create($row['BrudateB']);
                                         echo "<tr onclick='toggleDetails($row_number)'>";
                                         echo "<td>" . $row_number . "</td>";
                                         echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>";
                                         echo "<td>" . $row['number'] . "</td>";
                                         echo "<td>" . $row['type_id'] . "</td>";
                                         echo "<td>" . $row['Brunum'] . "</td>";
-                                        echo "<td>" . $row['BrudateB'] . "</td>";
-                                        echo "<td>" . $row['BrudateRe'] . "</td>";
+                                        echo "<td>" . date_format($BrudateB, "d/m/") . (date_format($BrudateB, "Y") + 543) . "</td>";
+                                        echo "<td>" . date_format($BrudateRe, "d/m/") . (date_format($BrudateRe, "Y") + 543) . "</td>";
                                         echo "<td>" . $st_name . "</td>";
                                         echo "</tr>";
                                         echo "<tr id='details_$row_number' style='display: none;'>";
@@ -258,8 +257,8 @@ $office_agency = $office_data['Agency'];
                                             echo "</form>";
                                             echo "<form action='updateStatus.php' method='POST'>";
                                             echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
-                                            echo "<label for='ag_id_$row_number'>อุปกรณ์ที่ยืม</label>";
-                                            $sql_items = "SELECT ag_id, ag_status FROM items_1 WHERE ag_type = '$type_id' AND BruID = '" . htmlspecialchars($row['BruID']) . "'";
+                                            echo "<label for='ag_name_$row_number'>อุปกรณ์ที่ยืม</label>";
+                                            $sql_items = "SELECT ag_name, ag_id, ag_status FROM items_1 WHERE ag_type = '$type_id' AND BruID = '" . htmlspecialchars($row['BruID']) . "'";
                                             $items_result = $conn->query($sql_items);
                                             $status_count = 0;
                                             if ($items_result->num_rows > 0) {
@@ -268,10 +267,11 @@ $office_agency = $office_data['Agency'];
                                                         $status_count++;
                                                     }
                                                 }
-                                                $items_result->data_seek(0);
+                                                $items_result->data_seek(0); // ย้อนกลับไปยังจุดเริ่มต้นเพื่อดึงข้อมูลอุปกรณ์ใหม่
                                                 while ($item = $items_result->fetch_assoc()) {
                                                     echo "<div class='form-group' style='display: flex; align-items: center;'>";
-                                                    echo "<p style='flex: 1; margin: 0;'>" . htmlspecialchars($item['ag_id']) . "</p>";
+                                                    // แสดง ag_name แทน ag_id
+                                                    echo "<p style='flex: 1; margin: 0;'>" . htmlspecialchars($item['ag_name']) . "</p>";
                                                     echo "<input type='hidden' name='ag_id[]' value='" . htmlspecialchars($item['ag_id']) . "'>";
                                                     if ($item['ag_status'] == 'ST002' || $item['ag_status'] == 'ST005') {
                                                         if ($status_count == 1) {
@@ -409,7 +409,6 @@ $office_agency = $office_data['Agency'];
             }
         }
 
-
         function returnItem(ag_id, BruID) {
             if (confirm("คุณต้องการแจ้งคืนอุปกรณ์นี้หรือไม่?")) {
                 // ทำการส่ง AJAX request ไปยังสคริปต์ PHP เพื่ออัพเดทสถานะ
@@ -419,7 +418,7 @@ $office_agency = $office_data['Agency'];
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4 && xhr.status == 200) {
                         alert("อัพเดทสถานะสำเร็จแล้ว");
-                        location.reload(); // รีโหลดหน้าเพื่อแสดงผลการอัปเดต
+                        location.reload();
                     }
                 };
                 xhr.send("ag_id=" + ag_id + "&BruID=" + BruID);
@@ -435,38 +434,35 @@ $office_agency = $office_data['Agency'];
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4 && xhr.status == 200) {
                         alert("อัพเดทสถานะสำเร็จแล้ว");
-                        location.reload(); // รีโหลดหน้าเพื่อแสดงผลการอัปเดต
+                        location.reload();
                     }
                 };
                 xhr.send("BruID=" + BruID);
             }
         }
         $(document).ready(function() {
-        // ตรวจสอบเมื่อมีการกดบันทึก
-        $('#submid').on('click', function(event) {
-            var borrowDate = document.getElementById("bordate").value;
-            var returnDate = document.getElementById("returnDate").value;
-            
-            // ตรวจสอบว่ากรอกวันที่ทั้งสองหรือไม่
-            if (!borrowDate) {
-                alert("กรุณาเลือกวันที่ยืม");
-                event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-                return;
-            }
-
-            if (!returnDate) {
-                alert("กรุณาเลือกวันที่คืน");
-                event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-                return;
-            }
-
-            // ตรวจสอบว่ากำหนดวันคืนมากกว่าวันยืมหรือไม่
-            if (new Date(returnDate) <= new Date(borrowDate)) {
-                alert("วันคืนต้องมากกว่าวันที่ยืม");
-                event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-            }
+            // ตรวจสอบเมื่อมีการกดบันทึก
+            $('#submid').on('click', function(event) {
+                var borrowDate = document.getElementById("bordate").value;
+                var returnDate = document.getElementById("returnDate").value;
+                // ตรวจสอบว่ากรอกวันที่ทั้งสองหรือไม่
+                if (!borrowDate) {
+                    alert("กรุณาเลือกวันที่ยืม");
+                    event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+                    return;
+                }
+                if (!returnDate) {
+                    alert("กรุณาเลือกวันที่คืน");
+                    event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+                    return;
+                }
+                // ตรวจสอบว่ากำหนดวันคืนมากกว่าวันยืมหรือไม่
+                if (new Date(returnDate) <= new Date(borrowDate)) {
+                    alert("วันคืนต้องมากกว่าวันที่ยืม");
+                    event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
+                }
+            });
         });
-    });
     </script>
 
 </body>

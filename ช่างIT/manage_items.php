@@ -1,13 +1,11 @@
 <?php
 session_start();
 include "../connect.php";
-
 // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
 if (!isset($_SESSION['username'])) {
     header("Location: index.php");
     exit();
 }
-
 // ดึงข้อมูลประเภทอุปกรณ์ทั้งหมด
 $typeQuery = "SELECT * FROM item_type";
 $typeResult = $conn->query($typeQuery);
@@ -16,11 +14,9 @@ $typeResult1 = $conn->query($typeQuery);
 // ดึงข้อมูลอุปกรณ์ทั้งหมด
 $itemQuery = "SELECT * FROM items_1";
 $itemResult = $conn->query($itemQuery);
-
 // ดึงข้อมูลสถานะทั้งหมดจาก statuslist
 $statusQuery = "SELECT st_id, st_name FROM statuslist";
 $statusResult = $conn->query($statusQuery);
-
 // สร้างอาเรย์เพื่อเก็บข้อมูลสถานะ
 $statusOptions = [];
 while ($status = $statusResult->fetch_assoc()) {
@@ -32,8 +28,6 @@ while ($type = $typeResult1->fetch_assoc()) {
     $typeOptions1[$type['type_id']] = $type['type_name'];
 }
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -216,7 +210,6 @@ while ($type = $typeResult1->fetch_assoc()) {
                             </tbody>
                         </table>
                     </section>
-
                     <section class="section">
                         <h2>กรองการแสดงข้อมูล</h2>
                         <form method="GET" action="manage_items.php">
@@ -249,7 +242,6 @@ while ($type = $typeResult1->fetch_assoc()) {
                             </div>
                         </form>
                     </section>
-
                     <section class="section">
                         <h2>จัดการ อุปกรณ์ IT</h2>
                         <table class="table">
@@ -267,19 +259,15 @@ while ($type = $typeResult1->fetch_assoc()) {
                                 // รับค่าตัวกรองจาก URL
                                 $type_filter = isset($_GET['type_filter']) ? $_GET['type_filter'] : '';
                                 $status_filter = isset($_GET['status_filter']) ? $_GET['status_filter'] : '';
-
                                 // ปรับ SQL query ตามค่าตัวกรอง
                                 $sql = "SELECT * FROM items_1 WHERE 1=1";
-
                                 if ($type_filter) {
                                     $sql .= " AND ag_type = ?";
                                 }
                                 if ($status_filter) {
                                     $sql .= " AND ag_status = ?";
                                 }
-
                                 $stmt = $conn->prepare($sql);
-
                                 // ผูกพารามิเตอร์
                                 if ($type_filter && $status_filter) {
                                     $stmt->bind_param("ss", $type_filter, $status_filter);
@@ -288,10 +276,8 @@ while ($type = $typeResult1->fetch_assoc()) {
                                 } elseif ($status_filter) {
                                     $stmt->bind_param("s", $status_filter);
                                 }
-
                                 $stmt->execute();
                                 $itemResult = $stmt->get_result();
-
                                 while ($row = $itemResult->fetch_assoc()) { ?>
                                     <tr>
                                         <form method="POST" action="update_item.php">
@@ -333,7 +319,6 @@ while ($type = $typeResult1->fetch_assoc()) {
 </body>
 
 </html>
-
 <?php
 $conn->close();
 ?>

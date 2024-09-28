@@ -74,6 +74,9 @@ $u_id = $_SESSION['u_id'];
                     <?php
                     $sql = "SELECT * FROM item_type";
                     if ($res = mysqli_query($conn, $sql)) {
+                        $grand_remaining = 0; // ค่าเริ่มต้นของจำนวนคงเหลือทั้งหมด
+                        $grand_borrowed = 0; // ค่าเริ่มต้นของจำนวนที่ถูกยืมทั้งหมด
+
                         while ($row = mysqli_fetch_array($res)) {
                             $type_id = $row['type_id'];
                             $type_name = $row['type_name'];
@@ -92,6 +95,10 @@ $u_id = $_SESSION['u_id'];
                                 $borrowed = $row2['borrowed'];
                             }
                             $total = $remaining + $borrowed;
+
+                            // คำนวณผลรวมของแต่ละประเภท
+                            $grand_remaining += $remaining;
+                            $grand_borrowed += $borrowed;
                     ?>
                             <div class="col-md-4">
                                 <div class="card">
@@ -106,7 +113,21 @@ $u_id = $_SESSION['u_id'];
                     <?php
                         }
                     }
+
+                    // แสดงข้อมูลรวมทั้งหมดหลังจากแสดงแบบแยกประเภท
+                    $grand_total = $grand_remaining + $grand_borrowed;
                     ?>
+                    <div class="col-md-12">
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">ข้อมูลอุปกรณ์ทั้งหมด</h5>
+                                <p class="card-text">จำนวนคงเหลือทั้งหมด <?php echo $grand_remaining; ?></p>
+                                <p class="card-text">จำนวนที่ถูกยืมทั้งหมด <?php echo $grand_borrowed; ?></p>
+                                <p class="card-text">จำนวนทั้งหมด <?php echo $grand_total; ?></p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-md-12">
                         <table id="items_1" class="table display" style="width:100%;margin-top :20px;">
                             <thead>
@@ -133,14 +154,16 @@ $u_id = $_SESSION['u_id'];
                                     while ($row = mysqli_fetch_assoc($result)) {
                                         $type_id = $row['type_id'];
                                         $st_name = $row['st_name']; // Use st_name instead of st_id
+                                        $BrudateRe = date_create($row['BrudateRe']);
+                                        $BrudateB = date_create($row['BrudateB']);
                                         echo "<tr onclick='toggleDetails($row_number)'>";
                                         echo "<td>" . $row_number . "</td>";
                                         echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>";
                                         echo "<td>" . $row['number'] . "</td>";
                                         echo "<td>" . $row['type_id'] . "</td>";
                                         echo "<td>" . $row['Brunum'] . "</td>";
-                                        echo "<td>" . $row['BrudateB'] . "</td>";
-                                        echo "<td>" . $row['BrudateRe'] . "</td>";
+                                        echo "<td>" . date_format($BrudateB, "d/m/") . (date_format($BrudateB, "Y") + 543) . "</td>";
+                                        echo "<td>" . date_format($BrudateRe, "d/m/") . (date_format($BrudateRe, "Y") + 543) . "</td>";
                                         echo "<td>" . $st_name . "</td>"; // Display status name instead of id
                                         echo "</tr>";
                                         // เริ่มแสดงผลตามสถานะ

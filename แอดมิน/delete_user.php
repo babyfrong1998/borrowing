@@ -1,6 +1,5 @@
 <?php
 include "../connect.php";
-
 if (isset($_GET['u_id'])) {
     $id = $_GET['u_id'];
 
@@ -12,6 +11,5 @@ if (isset($_GET['u_id'])) {
         echo "Error: " . $sql . "<br>" . $conn->error;
     }
 }
-
 $conn->close();
 ?>

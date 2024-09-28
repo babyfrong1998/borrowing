@@ -1,11 +1,11 @@
 <?php
 session_start();
 include "../connect.php";
-// ดึงข้อมูลผู้ใช้จาก Session
-$fname = $_SESSION['u_fname'];
-$lname = $_SESSION['u_lname'];
-$address = $_SESSION['u_address'];
-$u_id = $_SESSION['u_id'];
+
+// ตรวจสอบการเชื่อมต่อกับฐานข้อมูล
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
 // ดึงข้อมูลประเภทของอุปกรณ์และจำนวน
 $sqlTypeStats = "SELECT it.type_name, COUNT(i.ag_type) AS type_count 
                  FROM items_1 i 
@@ -18,19 +18,20 @@ while ($row = $resultTypeStats->fetch_assoc()) {
     $types[] = $row['type_name'];
     $typeCounts[] = $row['type_count'];
 }
-/// ดึงข้อมูลรายการยืมจากหน่วย โดยใช้ตาราง office และ borroww
+// ดึงข้อมูลรายการยืมจากหน่วย โดยใช้ตาราง office และ borroww
 $sqlBorrowFromAgency = "
 SELECT o.Agency, o.User, COUNT(b.number) AS borrow_count 
 FROM office o
-JOIN borroww b ON o.number = b.number
+LEFT JOIN borroww b ON o.number = b.number 
 GROUP BY o.Agency, o.User
+HAVING borrow_count > 0
 ";
 $resultBorrowFromAgency = $conn->query($sqlBorrowFromAgency);
 $agencies = [];
 $borrowCounts = [];
 while ($row = $resultBorrowFromAgency->fetch_assoc()) {
     $agencies[] = $row['Agency'] . " (" . $row['User'] . ")"; // รวมชื่อหน่วยกับผู้ใช้
-    $borrowCounts[] = $row['borrow_count'];
+    $borrowCounts[] = $row['borrow_count'] ? $row['borrow_count'] : 0; // แสดง 0 หากไม่มีการยืม
 }
 // สร้างอาร์เรย์สีเพื่อใช้กับหน่วยงานแต่ละหน่วย
 $colors = [];
@@ -62,28 +63,6 @@ while ($row = $resultStatsByMonth->fetch_assoc()) {
 }
 $conn->close();
 ?>
-<style>
-    h2 {
-        padding-top: 20px;
-        padding-bottom: 20px;
-        text-align: center;
-        width: 100%;
-        background-color: turquoise;
-        font-weight: bold;
-    }
-
-    .btn-back-home {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-   
-</style>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -91,8 +70,8 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Equipment Statistics</title>
-    <link rel="stylesheet" href="../styles.css"> <!-- ใช้ไฟล์ CSS เดียวกับหน้าอื่น ๆ -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js -->
+    <link rel="stylesheet" href="../styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* แบ่งส่วนเว็บเพจ */
         body {
@@ -135,18 +114,57 @@ $conn->close();
             padding: 20px;
         }
 
-        .chart-container {
-        width: 80%;
-        /* เปลี่ยนเป็นขนาดที่ต้องการ */
-        height: 400px;
-        /* เปลี่ยนเป็นขนาดที่ต้องการ */
-        margin: auto;
-    }
-
         h2 {
+            padding-top: 20px;
+            padding-bottom: 20px;
             text-align: center;
-            font-size: 18px;
-            margin-bottom: 20px;
+            width: 100%;
+            background-color: turquoise;
+            font-weight: bold;
+        }
+
+        .btn-back-home {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .chart-container {
+            width: 80%;
+            height: 400px;
+            margin: auto;
+        }
+
+        .btn-print {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .print-section,
+            .print-section * {
+                visibility: visible;
+            }
+
+            .print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -155,43 +173,65 @@ $conn->close();
     <div class="container">
         <header>
             <h1>IT Equipment Statistics</h1>
-            <a href="home_h.php" class="btn-back-home">Back to Home</a>
+            <a href="home_h.php" class="btn-back-home">Back to Admin Home</a>
         </header>
+
         <!-- ส่วนบนแบ่งเป็น ซ้าย-ขวา -->
         <div class="top-section">
             <!-- ซ้ายบน: กราฟประเภทอุปกรณ์ -->
-            <div class="left-top">
+            <div class="left-top print-section" id="print-type">
                 <h2>ประเภทอุปกรณ์ IT</h2>
                 <canvas id="typeChart" class="chart-container"></canvas>
+                <button class="btn-print" onclick="printSection('print-type')">Print Type Chart</button>
             </div>
+
             <!-- ขวาบน: กราฟแท่งแสดงรายการยืมจากหน่วย -->
-            <div class="right-top">
+            <div class="right-top print-section" id="print-borrow">
                 <h2>รายการยืมจากหน่วย</h2>
                 <canvas id="borrowChart" class="chart-container"></canvas>
+                <button class="btn-print" onclick="printSection('print-borrow')">Print Borrow Chart</button>
             </div>
         </div>
+
         <!-- ส่วนล่าง: กราฟผู้ยืมคืน -->
-        <div class="bottom-section">
+        <div class="bottom-section print-section" id="print-stats">
             <h2>สถิติการยืมและคืนอุปกรณ์ IT</h2>
             <canvas id="statsChart" class="chart-container"></canvas>
+            <button class="btn-print" onclick="printSection('print-stats')">Print Stats Chart</button>
         </div>
     </div>
+
     <script>
-        // ตัวอย่างข้อมูลประเภทอุปกรณ์ (อัพเดทด้วยข้อมูลจริง)
+        function printSection(sectionId) {
+            const allSections = document.querySelectorAll('.print-section');
+            const sectionToPrint = document.getElementById(sectionId);
+
+            // ซ่อนทุกส่วนก่อน
+            allSections.forEach(section => {
+                if (section !== sectionToPrint) {
+                    section.style.display = 'none';
+                }
+            });
+
+            // เรียกพิมพ์เฉพาะส่วนที่เลือก
+            window.print();
+
+            // แสดงทุกส่วนที่ถูกซ่อนกลับมา
+            allSections.forEach(section => {
+                section.style.display = '';
+            });
+        }
+
+        // กราฟวงกลมประเภทอุปกรณ์
         const typeLabels = <?php echo json_encode($types); ?>;
         const typeData = <?php echo json_encode($typeCounts); ?>;
-        const originalTypeData = [...typeData]; // Clone the original array
         const pieData = {
             labels: typeLabels,
             datasets: [{
                 label: 'ประเภทอุปกรณ์',
                 data: typeData,
-                backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'
-                ],
+                backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'],
+                borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'],
                 borderWidth: 1
             }]
         };
@@ -214,21 +254,21 @@ $conn->close();
                 }
             }
         };
-        // กราฟวงกลมประเภทอุปกรณ์
         const ctxPie = document.getElementById('typeChart').getContext('2d');
         new Chart(ctxPie, pieConfig);
-        // อัพเดทข้อมูลกราฟแท่งรายการยืมจากหน่วย
-        const borrowAgencyLabels = <?php echo json_encode($agencies); ?>; // ใช้ชื่อหน่วยงานเป็น labels
-        const borrowAgencyData = <?php echo json_encode($borrowCounts); ?>; // จำนวนการยืมของแต่ละหน่วยงาน
-        const backgroundColors = <?php echo json_encode($colors); ?>; // สีพื้นหลังของแต่ละแท่งกราฟ
-        const borderColors = <?php echo json_encode($borderColors); ?>; // สีขอบของแต่ละแท่งกราฟ
+
+        // กราฟแท่งรายการยืมจากหน่วย
+        const borrowAgencyLabels = <?php echo json_encode($agencies); ?>;
+        const borrowAgencyData = <?php echo json_encode($borrowCounts); ?>;
+        const backgroundColors = <?php echo json_encode($colors); ?>;
+        const borderColors = <?php echo json_encode($borderColors); ?>;
         const borrowData = {
-            labels: borrowAgencyLabels, // ใช้ชื่อหน่วยงานแต่ละอันเป็น labels
+            labels: borrowAgencyLabels,
             datasets: [{
-                label: 'จำนวนรายการยืม', // ชื่อของ datasets
-                data: borrowAgencyData, // ข้อมูลจำนวนการยืมของแต่ละหน่วยงาน
-                backgroundColor: backgroundColors, // สีพื้นหลังสำหรับแต่ละหน่วยงาน
-                borderColor: borderColors, // สีขอบสำหรับแต่ละหน่วยงาน
+                label: 'จำนวนรายการยืม',
+                data: borrowAgencyData,
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
                 borderWidth: 1
             }]
         };
@@ -237,6 +277,7 @@ $conn->close();
             data: borrowData,
             options: {
                 responsive: true,
+                indexAxis: 'x',
                 scales: {
                     x: {
                         beginAtZero: true
@@ -247,7 +288,7 @@ $conn->close();
                 },
                 plugins: {
                     legend: {
-                        display: true, // แสดงกล่องติ๊กใน legend
+                        display: true,
                         position: 'top'
                     }
                 }
@@ -255,26 +296,26 @@ $conn->close();
         };
         const ctxBarBorrow = document.getElementById('borrowChart').getContext('2d');
         new Chart(ctxBarBorrow, borrowConfig);
+
         // กราฟแท่งสถิติการยืมและคืน
         const months = <?php echo json_encode($months); ?>;
         const borrowedCounts = <?php echo json_encode($borrowedCounts); ?>;
         const returnedCounts = <?php echo json_encode($returnedCounts); ?>;
-        // สร้างกราฟแท่งสำหรับการยืมและคืน
         const statsData = {
             labels: months,
             datasets: [{
                     label: 'ยืม',
                     data: borrowedCounts,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)', // สีสำหรับรายการยืม
-                    borderColor: 'rgba(54, 162, 235, 1)', // สีขอบสำหรับรายการยืม
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1,
                     stack: 'stack0'
                 },
                 {
                     label: 'คืน',
                     data: returnedCounts,
-                    backgroundColor: 'rgba(255, 99, 132, 0.6)', // สีสำหรับรายการคืน
-                    borderColor: 'rgba(255, 99, 132, 1)', // สีขอบสำหรับรายการคืน
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 1,
                     stack: 'stack1'
                 }
@@ -309,7 +350,6 @@ $conn->close();
                 }
             }
         };
-        // วาดกราฟแท่ง
         const ctxStats = document.getElementById('statsChart').getContext('2d');
         new Chart(ctxStats, statsConfig);
     </script>

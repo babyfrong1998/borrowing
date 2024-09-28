@@ -1,10 +1,7 @@
 <?php
 include "../connect.php";
-
-
 if(isset($_POST['type_id'])) {
     $type_id = $_POST['type_id'];
-
     // ดึงข้อมูลจำนวนเครื่องที่มีสถานะเป็น ST001 และประเภทตรงกับที่เลือก
     $sql = "SELECT COUNT(*) as available FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
     $result = mysqli_query($conn, $sql);
