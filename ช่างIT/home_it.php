@@ -673,29 +673,9 @@ $office_agency = $office_data['Agency'];
                 }
             }
 
-            function printReturnForm(rowNumber) {
-                // เก็บข้อมูลจากแถวที่ถูกเลือก
-                const row = document.querySelector(`#details_${rowNumber}`);
-                const data = {
-                    BruID: row.querySelector('input[name="BruID"]').value,
-                    agNames: Array.from(row.querySelectorAll('p')).map(p => p.textContent), // ชื่ออุปกรณ์
-                    // เพิ่มข้อมูลอื่น ๆ ที่ต้องการ
-                };
-
-                // ส่งข้อมูลไปยัง PHP
-                fetch('generate_pdf.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => response.blob())
-                    .then(blob => {
-                        const url = window.URL.createObjectURL(blob);
-                        window.open(url);
-                    })
-                    .catch(error => console.error('Error:', error));
+            function printReturnForm() {
+                // เปิดไฟล์ PDF สำหรับพิมพ์
+                window.open('fromRe.pdf', '_blank');
             }
         </script>
 </body>
