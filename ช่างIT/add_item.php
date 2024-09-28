@@ -1,20 +1,17 @@
 <?php
 session_start();
 include "../connect.php";
-
 // ตรวจสอบว่าข้อมูลถูกส่งมาครบหรือไม่
 if (isset($_POST['ag_type']) && isset($_POST['ag_id']) && isset($_POST['ag_name'])) {
     $ag_type = $_POST['ag_type'];
     $ag_id = $_POST['ag_id'];
     $ag_name = $_POST['ag_name'];
-
     // ตรวจสอบว่ามีรหัสอุปกรณ์ซ้ำหรือไม่
     $sql_check_id = "SELECT * FROM items_1 WHERE ag_id = ?";
     $stmt_check_id = $conn->prepare($sql_check_id);
     $stmt_check_id->bind_param("s", $ag_id);
     $stmt_check_id->execute();
     $result_check_id = $stmt_check_id->get_result();
-
     if ($result_check_id->num_rows > 0) {
         // ถ้าพบรหัสอุปกรณ์ซ้ำ
         echo "<script>
@@ -28,7 +25,6 @@ if (isset($_POST['ag_type']) && isset($_POST['ag_id']) && isset($_POST['ag_name'
         $stmt_check_name->bind_param("s", $ag_name);
         $stmt_check_name->execute();
         $result_check_name = $stmt_check_name->get_result();
-
         if ($result_check_name->num_rows > 0) {
             // ถ้าพบชื่ออุปกรณ์ซ้ำ
             echo "<script>
@@ -40,7 +36,6 @@ if (isset($_POST['ag_type']) && isset($_POST['ag_id']) && isset($_POST['ag_name'
             $sql_insert = "INSERT INTO items_1 (ag_type, ag_id, ag_name, ag_status) VALUES (?, ?, ?, 'ST001')";
             $stmt_insert = $conn->prepare($sql_insert);
             $stmt_insert->bind_param("sss", $ag_type, $ag_id, $ag_name);
-
             if ($stmt_insert->execute()) {
                 // แสดงข้อความแจ้งเตือนและ redirect ไปยังหน้า home_it.php
                 echo "<script>
@@ -66,6 +61,4 @@ if (isset($_POST['ag_type']) && isset($_POST['ag_id']) && isset($_POST['ag_name'
             window.location.href = 'home_it.php';
           </script>";
 }
-
 $conn->close();
-?>

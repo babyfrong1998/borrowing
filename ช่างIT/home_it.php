@@ -137,7 +137,6 @@ $office_agency = $office_data['Agency'];
                             </select>
                         </div>
                         <div class="form-group">
-
                             <label for="ag_id">รหัสอุปกรณ์</label>
                             <input type="text" class="form-control" id="ag_id" name="ag_id" maxlength="50" required>
                         </div>
@@ -275,12 +274,10 @@ $office_agency = $office_data['Agency'];
                                             JOIN statuslist s ON b.st_id = s.st_id";
                                     $row_number = 1;
                                     $result = mysqli_query($conn, $sql);
-
                                     if (mysqli_num_rows($result) > 0) {
                                         while ($row = mysqli_fetch_assoc($result)) {
                                             $type_id = $row['type_id'];
                                             $st_name = $row['st_name']; // Use st_name instead of st_id
-
                                             echo "<tr onclick='toggleDetails($row_number)'>";
                                             echo "<td>" . $row_number . "</td>";
                                             echo "<td>" . $row['u_fname'] . " " . $row['u_lname'] . "</td>";
@@ -291,20 +288,16 @@ $office_agency = $office_data['Agency'];
                                             echo "<td>" . $row['BrudateRe'] . "</td>";
                                             echo "<td>" . $st_name . "</td>"; // Display status name instead of id
                                             echo "</tr>";
-
                                             // เริ่มแสดงผลตามสถานะ
                                             echo "<tr id='details_$row_number' style='display: none;'>";
                                             echo "<td colspan='8'>";
                                             echo "<p><strong>หมายเหตุ:</strong> " . htmlspecialchars($row['commen']) . "</p>"; // แสดงข้อมูล commen
-
                                             if ($row['st_id'] == 'ST007') {
                                                 // สถานะรอยืนยันการยืม
                                                 echo "<form id='borrowForm_$row_number' class='borrow-form' action='confirm_borrow.php' method='POST' onsubmit='return validateForm($row_number)'>";
                                                 echo "<input type='hidden' name='BruID' value='" . $row['BruID'] . "'>";
                                                 echo "<input type='hidden' name='BrudateRe' value='" . $row['BrudateRe'] . "'>"; // ส่งข้อมูลวันที่คืน
-
                                                 echo "<label for='ag_id_$row_number'>เลือกอุปกรณ์</label>";
-
                                                 // สร้างรายการตัวเลือกทั้งหมดเพียงครั้งเดียว
                                                 $sql_items = "SELECT ag_id, ag_name FROM items_1 WHERE ag_type = '$type_id' AND ag_status = 'ST001'";
                                                 $items_result = $conn->query($sql_items);
@@ -314,7 +307,6 @@ $office_agency = $office_data['Agency'];
                                                         $items_options[] = "<option value='" . $item['ag_id'] . "'>" . $item['ag_name'] . "</option>";
                                                     }
                                                 }
-
                                                 // แสดง dropdown สำหรับแต่ละแถว
                                                 for ($i = 0; $i < $row['Brunum']; $i++) {
                                                     echo "<div class='form-group'>";
@@ -323,7 +315,6 @@ $office_agency = $office_data['Agency'];
                                                     echo "</select>";
                                                     echo "</div>";
                                                 }
-
                                                 echo "<button type='submit' class='btn btn-primary'>ยืนยันการยืม</button>";
                                                 echo "</form>";
                                             } elseif ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005') {
@@ -474,7 +465,6 @@ $office_agency = $office_data['Agency'];
             }
             document.addEventListener('DOMContentLoaded', function() {
                 const selects = document.querySelectorAll('.ag-select');
-
                 selects.forEach((select, index) => {
                     select.addEventListener('change', function() {
                         // เก็บค่าอุปกรณ์ที่เลือกไว้ในแถวนี้
@@ -484,7 +474,6 @@ $office_agency = $office_data['Agency'];
                                 selectedValues.push(sel.value);
                             }
                         });
-
                         // กรองตัวเลือกใน select ของแถวถัดไป
                         selects.forEach((sel, idx) => {
                             if (idx > index) {
@@ -505,7 +494,6 @@ $office_agency = $office_data['Agency'];
                 // ดึงฟอร์มที่เฉพาะเจาะจง
                 var form = document.getElementById('borrowForm_' + rowNumber);
                 if (!form) return true; // ไม่มีฟอร์ม ไม่ต้องตรวจสอบ
-
                 var ag_selects = form.querySelectorAll('.ag-select');
                 var selectedValues = [];
                 for (var i = 0; i < ag_selects.length; i++) {
@@ -534,7 +522,6 @@ $office_agency = $office_data['Agency'];
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", "confirm_return.php", true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
                 // เมื่อ request สำเร็จ
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === 4 && xhr.status === 200) {
@@ -547,7 +534,6 @@ $office_agency = $office_data['Agency'];
                         button.disabled = true;
                     }
                 };
-
                 // ส่ง ag_id ไปที่เซิร์ฟเวอร์
                 xhr.send("ag_id=" + ag_id + "&action=confirm_return");
             }
@@ -576,7 +562,39 @@ $office_agency = $office_data['Agency'];
                         $('#userList').fadeOut();
                     }
                 });
-
+                document.getElementById('formdata').addEventListener('submit', function(event) {
+                    // ดึงค่าจากฟิลด์ที่ต้องตรวจสอบ
+                    var borname = document.getElementById('inputname').value.trim();
+                    var itemType = document.getElementById('inputcategory').value;
+                    var itemQuantity = document.getElementById('inputQuantity').value;
+                    var borrowDate = document.getElementById("bordate").value;
+                    var returnDate = document.getElementById("returnDate").value;
+                    // สร้างตัวแปรสำหรับเก็บข้อความแจ้งเตือน
+                    var missingFields = [];
+                    // ตรวจสอบว่าฟิลด์ไหนขาดหายไป
+                    if (!borname) {
+                        missingFields.push('ชื่อผู้ยืม');
+                    }
+                    if (!itemType) {
+                        missingFields.push('ประเภทอุปกรณ์');
+                    }
+                    if (!itemQuantity) {
+                        missingFields.push('จำนวนเครื่อง');
+                    }
+                    // ตรวจสอบว่ากรอกวันที่ทั้งสองหรือไม่
+                    if (!borrowDate) {
+                        missingFields.push('วันที่ยืม');
+                    }
+                    if (!returnDate) {
+                        missingFields.push('วันที่คืน');
+                    }
+                    // ถ้ามีฟิลด์ที่ขาดหาย ให้แจ้งเตือนและยกเลิกการส่งฟอร์ม
+                    if (missingFields.length > 0) {
+                        alert('กรุณากรอกข้อมูลให้ครบถ้วน: ' + missingFields.join(', '));
+                        event.preventDefault(); // ป้องกันการส่งฟอร์ม
+                        return;
+                    }
+                });
                 // เลือกผู้ยืมจาก dropdown
                 $(document).on('click', '#userList li', function() {
                     var fullname = $(this).text();
@@ -584,7 +602,6 @@ $office_agency = $office_data['Agency'];
                     $('#inputname').val(fullname);
                     $('#u_id').val(user_id);
                     $('#userList').fadeOut();
-
                     // ดึงข้อมูลเบอร์หน่วยงานจากฐานข้อมูลเมื่อเลือกผู้ยืม
                     $.ajax({
                         url: "fetch_office.php", // ไฟล์ PHP สำหรับดึงข้อมูลเบอร์หน่วยงาน
@@ -618,52 +635,12 @@ $office_agency = $office_data['Agency'];
                         $('#inputQuantity').html('<option value="">--เลือกจำนวนเครื่อง--</option>');
                     }
                 });
-
-                // กำหนดวันที่ปัจจุบันให้กับ input ที่มี id 'bordate'
+                // กำหนดวันที่ปัจจุบันให้กับ input ที่มี id 'bordate' ที่ใช้สำหรับกำหนดค่าขั้นต่ำ ให้กับฟิลด์วันที่ (input type="date") ในฟอร์ม
                 var today = new Date().toISOString().split('T')[0];
                 document.getElementById('bordate').setAttribute('min', today);
-
                 $('#bordate').on('change', function() {
                     var selectedBorrowDate = new Date(this.value).toISOString().slice(0, 16);
                     document.getElementById("returnDate").min = selectedBorrowDate;
-                });
-            });
-            document.getElementById('formdata').addEventListener('submit', function(event) {
-                // ดึงค่าจากฟิลด์
-                var borname = document.getElementById('inputname').value.trim();
-                var itemType = document.getElementById('inputcategory').value;
-                var itemQuantity = document.getElementById('inputQuantity').value;
-
-                // ตรวจสอบว่ามีการกรอกข้อมูลครบถ้วน
-                if (!borname || !itemType || !itemQuantity) {
-                    alert('กรุณากรอกข้อมูลให้ครบถ้วน: ชื่อผู้ยืม, ประเภทอุปกรณ์, และจำนวนเครื่อง');
-                    event.preventDefault(); // ป้องกันการส่งฟอร์ม
-                }
-            });
-            $(document).ready(function() {
-                // ตรวจสอบเมื่อมีการกดบันทึก
-                $('#submid').on('click', function(event) {
-                    var borrowDate = document.getElementById("bordate").value;
-                    var returnDate = document.getElementById("returnDate").value;
-
-                    // ตรวจสอบว่ากรอกวันที่ทั้งสองหรือไม่
-                    if (!borrowDate) {
-                        alert("กรุณาเลือกวันที่ยืม");
-                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-                        return;
-                    }
-
-                    if (!returnDate) {
-                        alert("กรุณาเลือกวันที่คืน");
-                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-                        return;
-                    }
-
-                    // ตรวจสอบว่ากำหนดวันคืนมากกว่าวันยืมหรือไม่
-                    if (new Date(returnDate) <= new Date(borrowDate)) {
-                        alert("วันคืนต้องมากกว่าวันที่ยืม");
-                        event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
-                    }
                 });
             });
         </script>

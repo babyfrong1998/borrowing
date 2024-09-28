@@ -19,11 +19,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);
     $BruID = $row['next_id'];
-
     // Insert data into the borroww table
     $sql = "INSERT INTO borroww (BruID, u_id, type_id, Brunum, BrudateB, BrudateRe, number, st_id, commen) 
             VALUES ('$BruID', '$u_id', '$type_id', '$item_quantity', '$bordate', '$returnDate', '$office_number', '$st_id', '$comment')";
-    
     if (mysqli_query($conn, $sql)) {
         // Redirect with success query parameter
         header("Location: home.php?success=1");
@@ -33,4 +31,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     mysqli_close($conn);
 }
-?>

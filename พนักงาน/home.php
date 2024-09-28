@@ -21,11 +21,9 @@ $result = mysqli_query($conn, $sql);
 $office_data = mysqli_fetch_assoc($result);
 $office_number = $office_data['number'];
 $office_agency = $office_data['Agency'];
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,7 +81,6 @@ $office_agency = $office_data['Agency'];
         cursor: pointer;
         border-radius: 4px;
     }
-
 
     #extend-form-container {
         position: fixed;
@@ -212,7 +209,6 @@ $office_agency = $office_data['Agency'];
                                         <h5 class="card-title"><?php echo htmlspecialchars($type_name); ?></h5>
                                         <p class="card-text">จำนวนคงเหลือ <?php echo $remaining; ?></p>
                                         <p class="card-text">จำนวนที่ถูกยืม <?php echo $borrowed; ?></p>
-
                                     </div>
                                 </div>
                             </div>
@@ -264,14 +260,11 @@ $office_agency = $office_data['Agency'];
                                             echo "<form id='return-all-form' action='updateAllStatus.php' method='POST' style='display:none;'>";
                                             echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                             echo "</form>";
-
                                             echo "<form action='updateStatus.php' method='POST'>";
                                             echo "<input type='hidden' name='BruID' value='" . htmlspecialchars($row['BruID']) . "'>";
                                             echo "<label for='ag_id_$row_number'>อุปกรณ์ที่ยืม</label>";
-
                                             $sql_items = "SELECT ag_id, ag_status FROM items_1 WHERE ag_type = '$type_id' AND BruID = '" . htmlspecialchars($row['BruID']) . "'";
                                             $items_result = $conn->query($sql_items);
-
                                             $status_count = 0;
                                             if ($items_result->num_rows > 0) {
                                                 while ($item = $items_result->fetch_assoc()) {
@@ -279,14 +272,11 @@ $office_agency = $office_data['Agency'];
                                                         $status_count++;
                                                     }
                                                 }
-
                                                 $items_result->data_seek(0);
-
                                                 while ($item = $items_result->fetch_assoc()) {
                                                     echo "<div class='form-group' style='display: flex; align-items: center;'>";
                                                     echo "<p style='flex: 1; margin: 0;'>" . htmlspecialchars($item['ag_id']) . "</p>";
                                                     echo "<input type='hidden' name='ag_id[]' value='" . htmlspecialchars($item['ag_id']) . "'>";
-
                                                     if ($item['ag_status'] == 'ST002' || $item['ag_status'] == 'ST005') {
                                                         if ($status_count == 1) {
                                                             echo "<button type='button' id='return-all' class='btn btn-warning' onclick='returnAllItems(\"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนทั้งหมด</button>";
@@ -301,17 +291,13 @@ $office_agency = $office_data['Agency'];
                                             } else {
                                                 echo "<p>ไม่มีอุปกรณ์ที่ยืมอยู่ในสถานะปัจจุบัน</p>";
                                             }
-
                                             if ($row['st_id'] == 'ST002' || $row['st_id'] == 'ST005' || $row['st_id'] == 'ST006') {
                                                 echo "<button type='button' id='return-all' class='btn btn-primary' onclick='returnAllItems(\"" . htmlspecialchars($row['BruID']) . "\")'>แจ้งคืนทั้งหมด</button>";
                                             } else if ($row['st_id'] == 'ST008') {
                                                 echo "<button type='submit' class='btn btn-primary' name='return_all' disabled>แจ้งคืนทั้งหมด</button>";
                                             }
-
                                             echo "</form>";
                                         }
-
-
                                         echo "</td>";
                                         echo "</tr>";
                                         $row_number++;
@@ -427,7 +413,6 @@ $office_agency = $office_data['Agency'];
             }
         }
     
-
         function returnItem(ag_id, BruID) {
             if (confirm("คุณต้องการแจ้งคืนอุปกรณ์นี้หรือไม่?")) {
                 // ทำการส่ง AJAX request ไปยังสคริปต์ PHP เพื่ออัพเดทสถานะ
@@ -471,13 +456,11 @@ $office_agency = $office_data['Agency'];
                 event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
                 return;
             }
-
             if (!returnDate) {
                 alert("กรุณาเลือกวันที่คืน");
                 event.preventDefault(); // ยกเลิกการ submit ฟอร์ม
                 return;
             }
-
             // ตรวจสอบว่ากำหนดวันคืนมากกว่าวันยืมหรือไม่
             if (new Date(returnDate) <= new Date(borrowDate)) {
                 alert("วันคืนต้องมากกว่าวันที่ยืม");

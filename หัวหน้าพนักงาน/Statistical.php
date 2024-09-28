@@ -1,11 +1,11 @@
 <?php
 session_start();
 include "../connect.php";
-// ดึงข้อมูลผู้ใช้จาก Session
-$fname = $_SESSION['u_fname'];
-$lname = $_SESSION['u_lname'];
-$address = $_SESSION['u_address'];
-$u_id = $_SESSION['u_id'];
+
+// ตรวจสอบการเชื่อมต่อกับฐานข้อมูล
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
 // ดึงข้อมูลประเภทของอุปกรณ์และจำนวน
 $sqlTypeStats = "SELECT it.type_name, COUNT(i.ag_type) AS type_count 
                  FROM items_1 i 
@@ -18,19 +18,20 @@ while ($row = $resultTypeStats->fetch_assoc()) {
     $types[] = $row['type_name'];
     $typeCounts[] = $row['type_count'];
 }
-/// ดึงข้อมูลรายการยืมจากหน่วย โดยใช้ตาราง office และ borroww
+// ดึงข้อมูลรายการยืมจากหน่วย โดยใช้ตาราง office และ borroww
 $sqlBorrowFromAgency = "
 SELECT o.Agency, o.User, COUNT(b.number) AS borrow_count 
 FROM office o
-JOIN borroww b ON o.number = b.number
+LEFT JOIN borroww b ON o.number = b.number 
 GROUP BY o.Agency, o.User
+HAVING borrow_count > 0
 ";
 $resultBorrowFromAgency = $conn->query($sqlBorrowFromAgency);
 $agencies = [];
 $borrowCounts = [];
 while ($row = $resultBorrowFromAgency->fetch_assoc()) {
     $agencies[] = $row['Agency'] . " (" . $row['User'] . ")"; // รวมชื่อหน่วยกับผู้ใช้
-    $borrowCounts[] = $row['borrow_count'];
+    $borrowCounts[] = $row['borrow_count'] ? $row['borrow_count'] : 0; // แสดง 0 หากไม่มีการยืม
 }
 // สร้างอาร์เรย์สีเพื่อใช้กับหน่วยงานแต่ละหน่วย
 $colors = [];
@@ -62,28 +63,6 @@ while ($row = $resultStatsByMonth->fetch_assoc()) {
 }
 $conn->close();
 ?>
-<style>
-    h2 {
-        padding-top: 20px;
-        padding-bottom: 20px;
-        text-align: center;
-        width: 100%;
-        background-color: turquoise;
-        font-weight: bold;
-    }
-
-    .btn-back-home {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-   
-</style>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -135,18 +114,31 @@ $conn->close();
             padding: 20px;
         }
 
-        .chart-container {
-        width: 80%;
-        /* เปลี่ยนเป็นขนาดที่ต้องการ */
-        height: 400px;
-        /* เปลี่ยนเป็นขนาดที่ต้องการ */
-        margin: auto;
-    }
-
         h2 {
+            padding-top: 20px;
+            padding-bottom: 20px;
             text-align: center;
-            font-size: 18px;
-            margin-bottom: 20px;
+            width: 100%;
+            background-color: turquoise;
+            font-weight: bold;
+        }
+
+        .btn-back-home {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .chart-container {
+            width: 80%;
+            /* เปลี่ยนเป็นขนาดที่ต้องการ */
+            height: 400px;
+            /* เปลี่ยนเป็นขนาดที่ต้องการ */
+            margin: auto;
         }
     </style>
 </head>
@@ -155,7 +147,7 @@ $conn->close();
     <div class="container">
         <header>
             <h1>IT Equipment Statistics</h1>
-            <a href="home_h.php" class="btn-back-home">Back to Home</a>
+            <a href="home_admin.php" class="btn-back-home">Back to Admin Home</a>
         </header>
         <!-- ส่วนบนแบ่งเป็น ซ้าย-ขวา -->
         <div class="top-section">
@@ -237,17 +229,18 @@ $conn->close();
             data: borrowData,
             options: {
                 responsive: true,
+                indexAxis: 'x',
                 scales: {
                     x: {
                         beginAtZero: true
                     },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
                     }
                 },
                 plugins: {
                     legend: {
-                        display: true, // แสดงกล่องติ๊กใน legend
+                        display: true,
                         position: 'top'
                     }
                 }

@@ -1,6 +1,5 @@
 <?php
 include "../connect.php";
-
 if (isset($_POST['user_id'])) {
     $user_id = $_POST['user_id'];
     $sql = "SELECT o.number, o.agency FROM office o 

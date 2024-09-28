@@ -18,7 +18,6 @@ $u_id = $_SESSION['u_id'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,7 +48,6 @@ $u_id = $_SESSION['u_id'];
         font-weight: bold;
     }
 </style>
-
 <body>
     <h2 id="nav">ระบบแอดมิน</h2>
     <div class="container">

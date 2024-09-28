@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Sep 01, 2024 at 09:01 AM
+-- Generation Time: Sep 25, 2024 at 12:00 PM
 -- Server version: 8.2.0
 -- PHP Version: 8.2.13
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `itmes`
+-- Database: `items`
 --
 
 -- --------------------------------------------------------
@@ -33,22 +33,51 @@ CREATE TABLE IF NOT EXISTS `borrohistory` (
   `b_items` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `b_date` date NOT NULL,
   `b_user` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `b_return_p` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `b_agency` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `b_status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `b_return` date DEFAULT NULL,
   `BruID` int NOT NULL,
+  `b_return_p` date NOT NULL,
   PRIMARY KEY (`b_id`),
   KEY `b_name` (`b_items`),
   KEY `b_agency` (`b_agency`)
-) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `borrohistory`
 --
 
-INSERT INTO `borrohistory` (`b_id`, `b_items`, `b_date`, `b_user`, `b_return_p`, `b_agency`, `b_status`, `b_return`, `BruID`) VALUES
-(84, '0089000', '2024-09-01', 'U002', NULL, '1017', 'ST002', '0000-00-00', 2);
+INSERT INTO `borrohistory` (`b_id`, `b_items`, `b_date`, `b_user`, `b_agency`, `b_status`, `b_return`, `BruID`, `b_return_p`) VALUES
+(84, '0089000', '2024-09-01', 'U002', '1017', 'ST002', '0000-00-00', 2, '0000-00-00'),
+(86, '00890', '2024-09-10', 'U002', '1017', 'ST005', '2024-09-11', 4, '0000-00-00'),
+(87, '0089', '2024-09-10', 'U002', '1017', 'ST005', '2024-09-11', 4, '0000-00-00'),
+(88, '089', '2024-09-10', 'U002', '1017', 'ST009', '2024-09-11', 4, '0000-00-00'),
+(89, '089', '2024-10-08', 'U002', '1017', 'ST009', '2024-09-11', 4, '0000-00-00'),
+(90, '089', '2024-10-08', 'U002', '1017', 'ST002', '2024-09-11', 4, '0000-00-00'),
+(91, '008900', '2024-09-17', 'U002', '1017', 'ST002', '0000-00-00', 10, '0000-00-00'),
+(92, '089', '2024-09-17', 'U002', '1017', 'ST002', '0000-00-00', 10, '0000-00-00'),
+(93, '008900', '2024-09-17', 'U002', '1017', 'ST009', '2024-09-17', 10, '0000-00-00'),
+(94, '089', '2024-09-17', 'U002', '1017', 'ST009', '2024-09-17', 10, '0000-00-00'),
+(95, '0089000', '2024-09-18', 'U002', '1050', 'ST002', '0000-00-00', 6, '0000-00-00'),
+(96, '0089', '2024-09-10', 'U002', '1017', 'ST009', '2024-09-18', 4, '0000-00-00'),
+(97, '00890', '2024-09-10', 'U002', '1017', 'ST009', '2024-09-18', 4, '0000-00-00'),
+(98, '123456222222', '2024-09-20', 'U002', '1017', 'ST002', '0000-00-00', 3, '0000-00-00'),
+(99, 'MCNXCV18273851C', '2024-09-20', 'U002', '1017', 'ST002', '0000-00-00', 3, '0000-00-00'),
+(100, 'MCNXCV21409352A', '2024-09-20', 'U002', '1017', 'ST002', '0000-00-00', 3, '0000-00-00'),
+(101, 'MCNXCV18274651B', '2024-09-20', 'U002', '1017', 'ST002', '0000-00-00', 3, '0000-00-00'),
+(102, '123456222222', '2024-09-20', 'U002', '1017', 'ST009', '2024-09-18', 3, '0000-00-00'),
+(103, 'MCNXCV18273851C', '2024-09-20', 'U002', '1017', 'ST009', '2024-09-18', 3, '0000-00-00'),
+(104, 'MCNXCV18274651B', '2024-09-20', 'U002', '1017', 'ST009', '2024-09-18', 3, '0000-00-00'),
+(105, 'MCNXCV21409352A', '2024-09-20', 'U002', '1017', 'ST009', '2024-09-18', 3, '0000-00-00'),
+(106, '0089', '2024-09-22', 'U002', '1017', 'ST002', '0000-00-00', 12, '0000-00-00'),
+(107, '7753', '2024-09-22', 'U002', '1017', 'ST002', '0000-00-00', 12, '0000-00-00'),
+(108, '7754', '2024-09-22', 'U002', '1017', 'ST002', '0000-00-00', 12, '0000-00-00'),
+(109, '0089', '2024-09-22', 'U002', '1017', 'ST009', '2024-09-22', 12, '0000-00-00'),
+(110, '7753', '2024-09-22', 'U002', '1017', 'ST009', '2024-09-22', 12, '0000-00-00'),
+(111, '7754', '2024-09-22', 'U002', '1017', 'ST009', '2024-09-22', 12, '0000-00-00'),
+(112, '111111', '2024-09-22', 'U002', '1017', 'ST002', '0000-00-00', 2, '0000-00-00'),
+(113, '51321', '2024-09-22', 'U002', '1017', 'ST002', '0000-00-00', 2, '0000-00-00'),
+(114, 'MCNXCV214107523', '2024-09-16', 'U002', '1019', 'ST005', '2024-09-24', 4, '0000-00-00');
 
 -- --------------------------------------------------------
 
@@ -66,17 +95,22 @@ CREATE TABLE IF NOT EXISTS `borroww` (
   `BrudateRe` date DEFAULT NULL,
   `number` int NOT NULL,
   `st_id` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `commen` varchar(50) DEFAULT NULL,
+  `commen` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   PRIMARY KEY (`BruID`)
-) ENGINE=MyISAM AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=MyISAM AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `borroww`
 --
 
 INSERT INTO `borroww` (`BruID`, `u_id`, `type_id`, `Brunum`, `BrudateB`, `BrudateRe`, `number`, `st_id`, `commen`) VALUES
-(2, 'U002', 'T001', 1, '2024-09-01', '0000-00-00', 1017, 'ST002', ''),
-(1, 'U001', 'T001', 1, '0000-00-00', '0000-00-00', 0, 'ST007', '');
+(47, 'U002', 'T005', 0, '2024-09-27', '2024-10-04', 1017, 'ST007', ''),
+(46, 'U003', 'T001', 2, '0000-00-00', '0000-00-00', 1052, 'ST007', ''),
+(5, 'U002', 'T001', 1, '2024-09-24', '2024-10-04', 1018, 'ST007', ''),
+(4, 'U002', 'T001', 1, '2024-09-16', '2024-09-24', 1019, 'ST005', ''),
+(3, 'U002', 'T002', 1, '2024-09-25', '2024-09-26', 1017, 'ST007', ''),
+(2, 'U002', 'T003', 2, '2024-09-22', '0000-00-00', 1017, 'ST008', ''),
+(1, 'U003', 'T001', 2, '0000-00-00', '0000-00-00', 1017, 'ST007', '');
 
 -- --------------------------------------------------------
 
@@ -101,18 +135,22 @@ CREATE TABLE IF NOT EXISTS `items_1` (
 --
 
 INSERT INTO `items_1` (`ag_id`, `ag_type`, `ag_name`, `ag_status`, `BruID`) VALUES
-('0089', 'T002', 'Ph04', 'ST001', 34),
-('00890', 'T002', 'Ph03', 'ST001', 42),
-('008900', 'T002', 'Ph05', 'ST001', 33),
-('0089000', 'T001', 'NB000', 'ST002', 2),
-('089', 'T002', 'PH', 'ST001', 25),
-('111111', 'T003', 'sc02', 'ST001', 30),
+('0089', 'T002', 'Ph045', 'ST001', 12),
+('00890', 'T002', 'Ph03', 'ST001', 4),
+('008900', 'T002', 'Ph05', 'ST001', 10),
+('0089000', 'T001', 'NB000', 'ST001', 6),
+('008900000', 'T001', '000', 'ST001', 0),
+('089', 'T002', 'PH', 'ST001', 10),
+('111111', 'T003', 'sc02', 'ST008', 2),
 ('123456', 'T003', 'sc01', 'ST001', 29),
+('123456222222', 'T001', 'NB30', 'ST001', 3),
+('1234565555', 'T001', '1NB30', 'ST001', 0),
+('135897a', 'T004', '222222', 'ST001', 0),
 ('1564', 'T003', 'SC04', 'ST001', 30),
-('51321', 'T003', 'sc03', 'ST001', 29),
+('51321', 'T003', 'sc03', 'ST008', 2),
 ('5555632', 'T002', 'PH02', 'ST001', 33),
-('7753', 'T002', 'ph1', 'ST001', 0),
-('7754', 'T002', 'pn2', 'ST001', 0),
+('7753', 'T002', 'ph1', 'ST001', 12),
+('7754', 'T002', 'pn2', 'ST001', 12),
 ('MCNXCV182696518', 'T001', 'NB01', 'ST001', 32),
 ('MCNXCV182699516', 'T001', 'NB02', 'ST001', 38),
 ('MCNXCV182706518', 'T001', 'NB03', 'ST001', 39),
@@ -121,14 +159,14 @@ INSERT INTO `items_1` (`ag_id`, `ag_type`, `ag_name`, `ag_status`, `BruID`) VALU
 ('MCNXCV18271451D', 'T001', 'NB06', 'ST001', 43),
 ('MCNXCV182725515', 'T001', 'NB07', 'ST001', 28),
 ('MCNXCV182729514', 'T001', 'NB08', 'ST001', 44),
-('MCNXCV18273851C', 'T001', 'NB09', 'ST001', 45),
-('MCNXCV18274651B', 'T001', 'NB10', 'ST001', 37),
-('MCNXCV21409352A', 'T001', 'NB11', 'ST001', 27),
+('MCNXCV18273851C', 'T001', 'NB09', 'ST001', 3),
+('MCNXCV18274651B', 'T001', 'NB10', 'ST001', 3),
+('MCNXCV21409352A', 'T001', 'NB11', 'ST001', 3),
 ('MCNXCV214095523', 'T001', 'NB12', 'ST001', 0),
 ('MCNXCV214098528', 'T001', 'NB13', 'ST001', 0),
 ('MCNXCV21410252G', 'T001', 'NB14', 'ST001', 0),
 ('MCNXCV214103520', 'T001', 'NB15', 'ST001', 0),
-('MCNXCV214107523', 'T001', 'NB16', 'ST001', 0),
+('MCNXCV214107523', 'T001', 'NB16', 'ST005', 4),
 ('MCNXCV21410852B', 'T001', 'NB17', 'ST001', 0),
 ('MCNXCV214110524', 'T001', 'NB18', 'ST001', 0),
 ('MCNXCV21411152B', 'T001', 'NB19', 'ST001', 0),
@@ -167,9 +205,7 @@ INSERT INTO `item_type` (`type_id`, `type_name`, `type_description`) VALUES
 ('T002', 'phone', 'phone'),
 ('T003', 'screen', 'screen'),
 ('T004', 'อุปกรณ์', 'อุปกรณ์'),
-('T005', 'เครื่องมือ', 'เครื่องมือ'),
-('T006', 'อุปกรณ์1', 'อออ'),
-('T007', 'อุปกรณ์2', 'v6xdiI');
+('T005', 'เครื่องมือ', 'เครื่องมือ');
 
 -- --------------------------------------------------------
 
@@ -668,8 +704,8 @@ INSERT INTO `office` (`number`, `Agency`, `User`) VALUES
 DROP TABLE IF EXISTS `statuslist`;
 CREATE TABLE IF NOT EXISTS `statuslist` (
   `st_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `st_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `st_des` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `st_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `st_des` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`st_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -704,7 +740,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `u_address` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `u_username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `u_password` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `u_status_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `u_status_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`u_id`),
   KEY `fk_status` (`u_status_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -714,10 +750,10 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 
 INSERT INTO `users` (`u_id`, `u_fname`, `u_lname`, `u_email`, `u_address`, `u_username`, `u_password`, `u_status_id`) VALUES
-('U001', 'นพอัครพงษ์', 'ขัติยะ', 'iookef', '1017\r\n', 'admin', 'admin', '3'),
+('U001', 'นพอัครพงษ์', 'ขัติยะ', 'iookef@d', '1017', 'admin', 'admin', '3'),
 ('U002', 'นพอัครพงษ์', 'ขัติยะ', 'iookef', '1017', 'admin', '123', '1'),
 ('U003', 'นพอัครพงษ์', 'ขัติยะ', 'iookef', '1017', 'adminit', '1234', '2'),
-('U004', 'นาย ', 'จ', 'dae@g', '1020', 'aaaa', 'aaaa', '2');
+('U004', 'aaaa', 'aaaa', 'dddd@xn--w3caaa', '1052', 'aaaa', 'aaaa', '4');
 
 -- --------------------------------------------------------
 
@@ -728,7 +764,7 @@ INSERT INTO `users` (`u_id`, `u_fname`, `u_lname`, `u_email`, `u_address`, `u_us
 DROP TABLE IF EXISTS `u_status`;
 CREATE TABLE IF NOT EXISTS `u_status` (
   `u_status_id` int NOT NULL AUTO_INCREMENT,
-  `u_status_name` varchar(255) NOT NULL,
+  `u_status_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   PRIMARY KEY (`u_status_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
