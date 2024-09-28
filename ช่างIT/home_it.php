@@ -331,18 +331,13 @@ $office_agency = $office_data['Agency'];
                                                         echo "</div>";
                                                     }
                                                 }
-
                                                 // ตรวจสอบวันคืน และแสดงปุ่มพิมพ์ใบแจ้งคืน
                                                 if ($BrudateRe <= $currentDate) {
-                                                    echo "<button type='button' class='btn btn-primary' onclick='printReturnForm()'>พิมพ์ใบแจ้งคืน</button>";
+                                                    echo "<button type='button' class='btn btn-primary' onclick='printReturnForm(" . $row['BruID'] . ")'>พิมพ์ใบแจ้งคืน</button>";
                                                 } else {
                                                     echo "<p>ยังไม่ถึงกำหนดวันคืน</p>";
                                                 }
                                             }
-
-                                            echo "</td>";
-                                            echo "</tr>";
-
                                             // การจัดการสถานะอื่น ๆ
                                             if ($row['st_id'] == 'ST007') {
                                                 echo "<tr id='details_$row_number' style='display: none;'>";
@@ -673,9 +668,10 @@ $office_agency = $office_data['Agency'];
                 }
             }
 
-            function printReturnForm() {
-                // เปิดไฟล์ PDF สำหรับพิมพ์
-                window.open('fromRe.pdf', '_blank');
+
+            function printReturnForm(BruID) {
+                // เปิดไฟล์ PHP ที่สร้าง PDF พร้อมข้อมูลใหม่
+                window.open('generate_pdf.php?BruID=' + BruID, '_blank');
             }
         </script>
 </body>
